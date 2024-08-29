@@ -38,7 +38,7 @@ nav ul {
     padding: 10px;
     border: 2px solid #333; /* Adds the rectangular border */
     border-radius: 5px; /* Optional: Slightly rounded corners */
-    transition: all 0.2s ease; /* Smooth transition for movements */
+    transition: all 0.1s ease; /* Smooth transition for movements */
 }
 
 
