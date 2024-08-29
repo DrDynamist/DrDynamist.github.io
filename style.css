@@ -29,13 +29,18 @@ nav ul {
     justify-content: center;
     background-color: #333;
 }
+
 #tricky-text {
+    cursor: pointer;
+    color: #d9534f; /* Text color */
+    font-weight: bold;
     display: inline-block;
     padding: 10px;
-    background-color: #f4f4f4;
-    border: 1px solid #ccc;
-    transition: all 0.3s ease;
+    border: 2px solid #333; /* Adds the rectangular border */
+    border-radius: 5px; /* Optional: Slightly rounded corners */
+    transition: all 0.3s ease; /* Smooth transition for movements */
 }
+
 
 
 nav ul li {
