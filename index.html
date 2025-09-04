@@ -1,113 +1,330 @@
-o<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nicholas Amadeus</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nicholas Amadeus</title>
+
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap">
+
+  <style>
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body { font-family: 'Source Code Pro', monospace; font-size: 15px; color: #222; }
+    #container {
+      margin: 0; padding: 0; min-height: 100vh; overflow: auto;
+      line-height: 1.35; white-space: pre; /* text is placed on a fixed grid */
+    }
+    /* Links inherit color; underline on hover for clarity */
+    #container a { color: inherit; text-decoration: none; }
+    #container a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Nicholas Amadeus</h1>
-        </header>
+  <div id="container"></div>
 
-        <nav>
-            <ul>
-                <li><a href="#">Home</a></li>
-                <li><a href="#">Research</a></li>
-                <li><a href="#">Personal</a></li>
-                <li><a href="#">Publications</a></li>
-                <li><a href="#">Contact</a></li>
-            </ul>
-        </nav>
+  <script>
+    document.fonts.ready.then(() => {
+      // ------------------------------ Utilities ------------------------------
+      const random = {
+        sampleUniform: (min, max) => min + Math.random() * (max - min),
+        sampleUniformInt: (min, max) => Math.floor(min + Math.random() * (max - min + 1)),
+      };
 
-        <main>
-            <section>
-                <h2>About:</h2>
-                <p>
-                    I am an undergraduate student of pure mathematics and statistics at the University of Michigan. 
-                    <br><br>
-                    My area of study/research is primarily centered on probability theory and applied functional analysis. 
-                    <br>
-                    In particular, high dimensional probability (and its applications) are my focus. 
-                    <br>
-                    <a href="https://www.math.uci.edu/~rvershyn/papers/HDP-book/HDP-book.html">Here's my favourite text that covers the topic, written by Dr. Roman Vershynin</a>
-                    <br><br>
-                    I also create projects pertaining to quantitative finance. 
-                    <br>
-                    My past projects/work delves more into mathematical physics (specifically Lagrangian mechanics). You can check them [here].
-                </p>
-            </section>
-            
-              <section>
-                <h2>Portfolio:</h2>
-                <p>
-                    In Progress.
-                    <br><br>
-                    Current Projects:<br>
-                    Markowitz Portfolio optimization applet (finance)<br>
-                    Geometry of integers (math|grouptheory/Numbertheory)<br>
-                    <br><br>
-                    Past Projects/Publications:<br>
-                    Smooth manifolds and Stokes' Theorems (MathDRP|topology)<br>
-                    Noether's Invariance Theorems and Conservation Laws (Physics)<br>
-                    Fractal generators (fractals|python)<br>
-                    <br><br>
-                </p>
-            </section>
-            
-              <section>
-                <h2>Myself(?):</h2>
-                <p>
-                    You can also get to know me more holistically by exploring my hobbies and the little activities I enjoy.
-                    <br><br>
-<!--                     Aside from mathematics, I absolutely love zoology, marine biology, and genetic analysis. I enjoy paleontology to a great extent as well (click here for my fossil collection NOT UP TO DATE/ ONLY DEVONIAN ERA FOSSILS).
-                    <br>
-                    Some other interests: 
-                    <br> Philosophy [ADDLINK HERE]
-                    <br> Chess [ADDLINK HERE]
-                    <br> Soulslike RPGs [ADDLINK HERE]
-                    <br> Psychology and psychoanalytic methods [ADDLINK HERE] -->
-                    <br><br>
-                    <a href="URL">Species identification</a> is a childhood hobby that still holds dear to my heart until today. 
-                    
-                    <br><br> Books speak volumes about an individual. (Yes, the pun was indeed intended).
-                    
-                    <br>
-                    Feel free to <a href="books.html">check out what I love to read.</a>                    
-                    <br><br>
-                    Other miscellaneous tidbits of my life are listed on the "Personal" page. 
-                    <br><br>
-                    
-                </p>
-            </section>
-            
-<!--              <section>
-                <h2>Contact Me:</h2>
-                <p>
-                   Click here to find my vita, credentials, and contact information.
-                   <br><br>
-                </p>
-            </section> -->
+      // Remove leading whitespace from each line so template strings are tidy
+      const dedent = (text) => {
+        const lines = text.split('\n');
+        const nonEmpty = lines.filter(line => line.trim());
+        if (!nonEmpty.length) return text;
+        const indent = Math.min(...nonEmpty.map(line => line.match(/^ */)[0].length));
+        return lines.map(line => line.slice(indent)).join('\n');
+      };
 
-<section>
-    <h2>Contact Me:</h2>
-    <p id="tricky-text" style="cursor: pointer;">
-       Click here to find my vita, credentials, and contact information.
-       <br><br>
-    </p>
-</section>
-            
-            
-        </main>
+      // ------------------------------ Config ------------------------------
+      const config = {
+        fontSize: 15,
+        charWidth: 15 * 0.6,
+        charHeight: 15 * 1.35,
+        backgroundColor: "#fffbef",
+        maxFrame: 300,   // how long the “flight” lasts
+        intervalMs: 15,  // frame pacing
+        content: dedent(`
+          [b]Nicholas Amadeus[/b]
 
-        <footer>
-            <p>Last updated - 17/9/2024</p>
-        </footer>
-    </div>
+          [link index.html]Home[/link]  •  [link research.html]Research[/link]  •  [link personal.html]Personal[/link]  •  [link publications.html]Publications[/link]  •  [link contact.html]Contact[/link]
 
-    <script src="stupid.js"></script>
+
+          [b]About[/b]
+
+          I am an undergraduate student of pure mathematics and statistics at the University of Michigan.
+
+          My area of study/research is primarily centered on probability theory and applied functional analysis.
+          In particular, high dimensional probability (and its applications) are my focus.
+          [link https://www.math.uci.edu/~rvershyn/papers/HDP-book/HDP-book.html]Here's my favourite text on the topic by Roman Vershynin[/link].
+
+          I also create projects pertaining to quantitative finance.
+          My past projects/work delves more into mathematical physics (specifically Lagrangian mechanics).
+          You can check them [link projects.html]here[/link].
+
+
+          [b]Portfolio[/b]
+
+          In Progress.
+
+          Current Projects:
+           - Markowitz Portfolio optimization applet (finance)
+           - Geometry of integers (math | group theory / number theory)
+
+          Past Projects / Publications:
+           - Smooth manifolds and Stokes' Theorems (MathDRP | topology)
+           - Noether's Invariance Theorems and Conservation Laws (Physics)
+           - Fractal generators (fractals | python)
+
+
+          [b]Myself(?)[/b]
+
+          You can get to know me more holistically through my hobbies and the little activities I enjoy.
+
+          [link URL]Species identification[/link] is a childhood hobby that still holds dear to my heart until today.
+
+          Books speak volumes about an individual (pun intended).
+          Feel free to [link books.html]check out what I love to read[/link].
+
+          Other miscellaneous tidbits of my life are listed on the "Personal" page.
+
+
+          [b]Contact Me[/b]
+
+          [link contact.html]Click here to find my vita, credentials, and contact information[/link].
+
+
+          [i]Last updated - 17/9/2024[/i]
+        `),
+      };
+
+      const state = { chars: [], numRows: 0, numColumns: 0, frame: 0, nextFrameTime: 0 };
+
+      // ------------------------------ Tag-aware text to char array ------------------------------
+      // Supports [b] [/b], [i] [/i], [link URL] [/link]
+      const getCharsFromText = (text) => {
+        const chars = [];
+        const activeTags = [];
+        const cps = [...text]; // unicode-safe
+
+        for (let i = 0; i < cps.length; i++) {
+          if (cps[i] === '[' && cps.includes(']', i)) {
+            const j = cps.indexOf(']', i);
+            const tag = cps.slice(i + 1, j).join('');
+            if (tag[0] === '/') {
+              const tagName = tag.slice(1);
+              const idx = activeTags.findIndex(t => t.name === tagName);
+              if (idx !== -1) activeTags.splice(idx, 1);
+            } else {
+              const [name, ...args] = tag.split(/\s+/);
+              activeTags.push({ name, args });
+            }
+            i = j;
+            continue;
+          }
+          chars.push({ id: `text-${i}`, char: cps[i], tags: [...activeTags] });
+        }
+        return chars;
+      };
+
+      // Simple greedy wrapper by character count (breaks on spaces when possible)
+      const wrapText = (chars, width) => {
+        const lines = [];
+        let line = [];
+        for (const ch of chars) {
+          if (ch.char === '\n') { lines.push(line); line = []; continue; }
+          line.push(ch);
+          if (line.length > width) {
+            const cut = line.findLastIndex(c => c.char === ' ');
+            if (cut >= 0) { lines.push(line.slice(0, cut)); line = line.slice(cut + 1); }
+            else { lines.push(line); line = []; }
+          }
+        }
+        if (line.length) lines.push(line);
+        return lines;
+      };
+
+      // ------------------------------ Layout & generation ------------------------------
+      const generateChars = () => {
+        const minRows = Math.floor(window.innerHeight / config.charHeight);
+        let numColumns = Math.floor((window.innerWidth - 1) / config.charWidth);
+        if (numColumns < 25) numColumns = 30;
+
+        // Parse content
+        let chars = getCharsFromText(config.content);
+
+        // Decide wrapping width (60–80% of columns depending on screen width)
+        const sizeWeight = Math.min(1, Math.max(0, (window.innerWidth - 600) / 1000));
+        const numWrapColumns = Math.ceil(numColumns * (0.6 * sizeWeight + 0.8 * (1 - sizeWeight)));
+
+        const lines = wrapText(chars, numWrapColumns);
+        const numRows = Math.max(minRows, lines.length + 8);
+        const startY = Math.max(5, Math.floor((numRows - lines.length) * 0.4));
+        const startX = Math.floor((numColumns - numWrapColumns) * 0.5);
+
+        chars = [];
+        for (let y = 0; y < lines.length; y++) {
+          for (let x = 0; x < lines[y].length; x++) {
+            const char = lines[y][x];
+            char.weight = random.sampleUniform(0, 1);
+            char.position = { x: random.sampleUniformInt(0, numColumns), y: random.sampleUniformInt(0, numRows) };
+            char.finalPosition = { x: startX + x, y: startY + y };
+            chars.push(char);
+          }
+        }
+
+        // Keep gaps for spaces/newlines by removing their elements but preserving positions of others
+        chars = chars.filter(c => (c.char !== ' ' && c.char !== '\n') || c.tags.length > 0);
+
+        state.chars = chars;
+        state.numRows = numRows;
+        state.numColumns = numColumns;
+      };
+
+      const createCharElement = ({ position: { x, y }, id, tags, char }) => {
+        const { charWidth, charHeight } = config;
+        const el = document.createElement('a');
+        el.style.position = 'absolute';
+        el.style.top = `${y * charHeight}px`;
+        el.style.left = `${x * charWidth}px`;
+        el.style.minWidth = `${charWidth}px`;
+        el.style.minHeight = `${charHeight}px`;
+        el.textContent = char;
+        el.id = `char-${id}`;
+
+        for (const { name, args } of tags) {
+          if (name === 'link') {
+            el.href = args[0] || '#';
+            // open external links in new tab, internal stay same tab
+            if (/^https?:\/\//i.test(args[0])) el.target = '_blank';
+          } else if (name === 'b') {
+            el.style.fontWeight = '700';
+          } else if (name === 'i') {
+            el.style.fontStyle = 'italic';
+          }
+        }
+        return el;
+      };
+
+      const createCornerElement = () => {
+        const { charWidth, charHeight } = config;
+        const { numRows, numColumns } = state;
+        const corner = document.createElement('a');
+        corner.style.position = 'absolute';
+        corner.style.top = `${(numRows - 1) * charHeight}px`;
+        corner.style.left = `${(numColumns - 1) * charWidth}px`;
+        corner.textContent = ' ';
+        return corner;
+      };
+
+      // ------------------------------ Animation ------------------------------
+      const animateGrid = (t) => {
+        if (t > state.nextFrameTime) {
+          evolveChars();
+          state.chars.forEach(updateCharElementPosition);
+          state.nextFrameTime = t + config.intervalMs;
+          state.frame++;
+        }
+        requestAnimationFrame(animateGrid);
+      };
+
+      const evolveChars = () => {
+        const { frame, chars, numRows, numColumns } = state;
+        const { charWidth, charHeight, maxFrame } = config;
+        const t = Math.min(frame / maxFrame, 1);
+        const heightWidthRatio = charHeight / charWidth;
+
+        const positionMap = {};
+        chars.forEach(ch => { positionMap[`${ch.position.y},${ch.position.x}`] = ch; });
+        const frozen = new Set();
+
+        const moveChar = (ch, { x, y }) => {
+          positionMap[`${ch.position.y},${ch.position.x}`] = null;
+          positionMap[`${y},${x}`] = ch;
+          frozen.add(`${y},${x}`);
+          ch.position = { x, y };
+        };
+
+        const sorted = [...chars].sort((a, b) => {
+          const distA = Math.abs(a.finalPosition.y - a.position.y) + Math.abs(a.finalPosition.x - a.position.x);
+          const distB = Math.abs(b.finalPosition.y - b.position.y) + Math.abs(b.finalPosition.x - b.position.x);
+          return (distB - distA) + random.sampleUniform(-3, 3);
+        });
+
+        for (const ch of sorted) {
+          const { x, y } = ch.position;
+          if (frozen.has(`${y},${x}`)) continue;
+
+          const move = { x: 0, y: 0 };
+
+          // Pull toward final
+          const toFinal = { x: ch.finalPosition.x - x, y: ch.finalPosition.y - y };
+          const dFinal = Math.hypot(toFinal.x, toFinal.y);
+          if (dFinal > 0) {
+            const w = Math.max(0, t - 0.8 + ch.weight);
+            move.x += w * toFinal.x / dFinal;
+            move.y += w * toFinal.y / dFinal;
+          }
+
+          // Gentle clockwise curl around viewport center (strong early, fades out)
+          const centerX = (window.scrollX + window.innerWidth / 2) / charWidth;
+          const centerY = (window.scrollY + window.innerHeight / 2) / charHeight;
+          const toCenter = {
+            x: centerX - x + random.sampleUniform(-0.1, 0.1),
+            y: heightWidthRatio * (centerY - y + random.sampleUniform(-0.1, 0.1)),
+          };
+          const dCenter = Math.hypot(toCenter.x, toCenter.y);
+          if (dCenter > 0) {
+            const w = Math.max(0, 1 - t);
+            move.x += w * toCenter.y / dCenter;
+            move.y += w * -toCenter.x / dCenter;
+          }
+
+          if (Math.hypot(move.x, move.y) < 0.001) { frozen.add(`${y},${x}`); continue; }
+
+          const theta = Math.atan2(move.y, move.x) + random.sampleUniform(-Math.PI/4, Math.PI/4);
+          const step = Math.PI / 4;
+          const dir = Math.round(theta / step) * step;
+
+          const nx = (x + Math.round(Math.cos(dir)) + numColumns) % numColumns;
+          const ny = (y + Math.round(Math.sin(dir)) + numRows) % numRows;
+          const key = `${ny},${nx}`;
+          if (frozen.has(key)) continue;
+
+          const target = positionMap[key];
+          if (target) moveChar(target, ch.position);
+          moveChar(ch, { x: nx, y: ny });
+        }
+      };
+
+      const updateCharElementPosition = ({ position: { x, y }, id }) => {
+        const el = document.getElementById(`char-${id}`);
+        el.style.top = `${y * config.charHeight}px`;
+        el.style.left = `${x * config.charWidth}px`;
+      };
+
+      // ------------------------------ Boot ------------------------------
+      const start = () => {
+        document.body.style.background = config.backgroundColor;
+        generateChars();
+
+        const container = document.getElementById('container');
+        const elements = [...state.chars.map(createCharElement), createCornerElement()];
+        elements.forEach(el => container.appendChild(el));
+
+        requestAnimationFrame(animateGrid);
+      };
+
+      start();
+      // (Optional) Reflow on resize—comment out if you prefer a static layout.
+      // window.addEventListener('resize', () => { location.reload(); });
+    });
+  </script>
 </body>
 </html>
-
