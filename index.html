@@ -55,13 +55,13 @@
 
   <script>
     document.fonts.ready.then(() => {
-      // ------------------------------ Themes (updated) ------------------------------
+      // ------------------------------ Themes ------------------------------
       const THEMES = {
-        "Default":         { bg: "#fffbef", fg: "#222222" }, // keeping your previous default
+        "Default":         { bg: "#fffbef", fg: "#222222" },
         "Castle":          { bg: "#171628", fg: "#ffffff" },
         "ProveIt":         { bg: "#223c5f", fg: "#ff3300" },
         "HakunaMatata":    { bg: "#0c2c73", fg: "#0b2e72" },
-        "Drawer":          { bg: "#0c2c73", fg: "#02d3be" }, // updated text color
+        "Drawer":          { bg: "#0c2c73", fg: "#02d3be" },
         "tooSigma":        { bg: "#00a5bd", fg: "#edf9fa" },
         "theRiver":        { bg: "#0e4888", fg: "#e7f2f8" },
         "PlainJane":       { bg: "#ffffff", fg: "#000000" },
@@ -88,7 +88,7 @@
       };
 
       const dedent = (text) => {
-        const lines = text split('\n');
+        const lines = text.split('\n');
         const nonEmpty = lines.filter(line => line.trim());
         if (!nonEmpty.length) return text;
         const indent = Math.min(...nonEmpty.map(line => line.match(/^ */)[0].length));
