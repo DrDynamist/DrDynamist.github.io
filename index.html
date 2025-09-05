@@ -12,8 +12,8 @@
 
   <style>
     :root {
-      --bg: #fffbef; /* Default */
-      --fg: #222222;
+      --bg: #fffbef; /* Default background */
+      --fg: #222222; /* Default text */
     }
     html, body { height: 100%; margin: 0; padding: 0; }
     body {
@@ -23,8 +23,11 @@
       font-size: 15px;
     }
     #container {
-      margin: 0; padding: 0; min-height: 100vh; overflow: auto;
-      line-height: 1.35; white-space: pre; position: relative;
+      position: relative;
+      min-height: 100vh;
+      overflow: auto;
+      line-height: 1.35;
+      white-space: pre; /* fixed grid text */
     }
     #container a { color: inherit; text-decoration: none; }
     #container a:hover { text-decoration: underline; }
@@ -43,7 +46,7 @@
       cursor: pointer;
       backdrop-filter: blur(2px);
     }
-    #repaintBtn:hover { opacity: 0.8; }
+    #repaintBtn:hover { opacity: 0.85; }
 
     .fade { transition: opacity 150ms ease; }
     .fade.hidden { opacity: 0; }
@@ -88,10 +91,10 @@
       };
 
       const dedent = (text) => {
-        const lines = text.split('\n');
+        const lines = text.split('\n');               // ✅ fixed: .split
         const nonEmpty = lines.filter(line => line.trim());
         if (!nonEmpty.length) return text;
-        const indent = Math.min(...nonEmpty.map(line => line.match(/^ */)[0].length));
+        const indent = Math.min(...nonEmpty.map(line => (line.match(/^ */) || [''])[0].length));
         return lines.map(line => line.slice(indent)).join('\n');
       };
 
@@ -160,10 +163,11 @@
       const state = { chars: [], numRows: 0, numColumns: 0, frame: 0, nextFrameTime: 0 };
 
       // ------------------------------ Parser ------------------------------
+      // Supports [b] [/b], [i] [/i], [link URL] [/link]
       const getCharsFromText = (text) => {
         const chars = [];
         const active = [];
-        const cps = [...text];
+        const cps = [...text]; // unicode-safe
         for (let i = 0; i < cps.length; i++) {
           if (cps[i] === '[' && cps.includes(']', i)) {
             const j = cps.indexOf(']', i);
@@ -184,14 +188,19 @@
         return chars;
       };
 
+      // Greedy wrapper; breaks on spaces when possible
       const wrapText = (chars, width) => {
         const lines = [];
         let line = [];
+        const findLastSpace = (arr) => {
+          for (let k = arr.length - 1; k >= 0; k--) if (arr[k].char === ' ') return k;
+          return -1;
+        };
         for (const ch of chars) {
           if (ch.char === '\n') { lines.push(line); line = []; continue; }
           line.push(ch);
           if (line.length > width) {
-            const cut = line.findLastIndex(c => c.char === ' ');
+            const cut = findLastSpace(line); // compatible fallback for findLastIndex
             if (cut >= 0) { lines.push(line.slice(0, cut)); line = line.slice(cut + 1); }
             else { lines.push(line); line = []; }
           }
@@ -208,6 +217,7 @@
 
         let chars = getCharsFromText(config.content);
 
+        // 60–80% of columns depending on width
         const sizeWeight = Math.min(1, Math.max(0, (window.innerWidth - 600) / 1000));
         const numWrapColumns = Math.ceil(numColumns * (0.6 * sizeWeight + 0.8 * (1 - sizeWeight)));
 
@@ -227,6 +237,7 @@
           }
         }
 
+        // Keep styled spaces (inside tags), drop plain spaces/newlines
         chars = chars.filter(c => (c.char !== ' ' && c.char !== '\n') || c.tags.length > 0);
 
         state.chars = chars;
@@ -258,6 +269,7 @@
         return el;
       };
 
+      // Invisible corner to lock container size
       const createCornerElement = () => {
         const { charWidth, charHeight } = config;
         const { numRows, numColumns } = state;
@@ -297,10 +309,11 @@
           ch.position = { x, y };
         };
 
+        // Furthest first to reduce jams
         const sorted = [...chars].sort((a, b) => {
           const distA = Math.abs(a.finalPosition.y - a.position.y) + Math.abs(a.finalPosition.x - a.position.x);
           const distB = Math.abs(b.finalPosition.y - b.position.y) + Math.abs(b.finalPosition.x - b.position.x);
-          return (distB - distA) + Math.random() * 6 - 3;
+          return (distB - distA) + (Math.random() * 6 - 3);
         });
 
         for (const ch of sorted) {
@@ -309,11 +322,11 @@
 
           const move = { x: 0, y: 0 };
 
-          // Pull toward final
+          // Pull toward final position
           const toFinal = { x: ch.finalPosition.x - x, y: ch.finalPosition.y - y };
           const dFinal = Math.hypot(toFinal.x, toFinal.y);
           if (dFinal > 0) {
-            const w = Math.max(0, t - 0.8 + ch.weight);
+            const w = Math.max(0, t - 0.8 + ch.weight); // stronger late in the animation
             move.x += w * toFinal.x / dFinal;
             move.y += w * toFinal.y / dFinal;
           }
@@ -327,13 +340,14 @@
           };
           const dCenter = Math.hypot(toCenter.x, toCenter.y);
           if (dCenter > 0) {
-            const w = Math.max(0, 1 - t);
+            const w = Math.max(0, 1 - t); // early swirl
             move.x += w * toCenter.y / dCenter;
             move.y += w * -toCenter.x / dCenter;
           }
 
           if (Math.hypot(move.x, move.y) < 0.001) { frozen.add(`${y},${x}`); continue; }
 
+          // Quantized step with noise
           const theta = Math.atan2(move.y, move.x) + random.sampleUniform(-Math.PI/4, Math.PI/4);
           const step = Math.PI / 4;
           const dir = Math.round(theta / step) * step;
@@ -386,14 +400,14 @@
         requestAnimationFrame(animateGrid);
       };
 
-      // Button wiring: cycle theme silently (no names shown anywhere)
+      // Button: cycle theme (no names displayed)
       document.getElementById('repaintBtn').addEventListener('click', () => {
         themeIndex = (themeIndex + 1) % THEME_ORDER.length;
         repaint(THEME_ORDER[themeIndex]);
       });
 
       start();
-      // Optional: repaint on resize
+      // Optional: repaint on resize for crisp layout
       // window.addEventListener('resize', () => repaint(THEME_ORDER[themeIndex]));
     });
   </script>
