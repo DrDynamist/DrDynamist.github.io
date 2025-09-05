@@ -47,43 +47,32 @@
     #repaintBtn:hover { opacity: 0.8; }
 
     /* small helper to avoid layout jump while repainting */
-    .fade {
-      transition: opacity 150ms ease;
-    }
+    .fade { transition: opacity 150ms ease; }
     .fade.hidden { opacity: 0; }
   </style>
 </head>
 <body>
-  <button id="repaintBtn" title="Cycle theme & repaint the animation">Repaint (Default)</button>
+  <button id="repaintBtn" title="Cycle theme & repaint the animation">Repaint</button>
   <div id="container" class="fade"></div>
 
   <script>
     document.fonts.ready.then(() => {
       // ------------------------------ Themes ------------------------------
       const THEMES = {
-        // Keeps your current scheme
         "Default":       { bg: "#fffbef", fg: "#222222" },
-
-        // Variations (exact names and colors you gave)
         "Castle":        { bg: "#171628", fg: "#ffffff" },
         "ProveIt":       { bg: "#223c5f", fg: "#ff3300" },
-        "HakunaMatata":  { bg: "#0c2c73", fg: "#0b2e72" },
-        "Drawer":        { bg: "#1d2643", fg: "#02d3be" }, 
+        // Fixed HakunaMatata text color for contrast
+        "HakunaMatata":  { bg: "#0c2c73", fg: "#ffffff" },
+        "Drawer":        { bg: "#1d2643", fg: "#02d3be" },
         "tooSigma":      { bg: "#00a5bd", fg: "#edf9fa" },
         "theRiver":      { bg: "#0e4888", fg: "#e7f2f8" },
         "PlainJane":     { bg: "#ffffff", fg: "#000000" },
         "insiderTrader27": { bg: "#005e9c", fg: "#00aeef" },
       };
       const THEME_ORDER = [
-        "Default",
-        "Castle",
-        "ProveIt",
-        "HakunaMatata",
-        "Drawer",
-        "tooSigma",
-        "theRiver",
-        "PlainJane",
-        "insiderTrader27",
+        "Default","Castle","ProveIt","HakunaMatata","Drawer",
+        "tooSigma","theRiver","PlainJane","insiderTrader27",
       ];
       let themeIndex = 0;
 
@@ -93,10 +82,7 @@
         document.documentElement.style.setProperty("--fg", t.fg);
         document.body.style.background = t.bg;
         document.body.style.color = t.fg;
-
-        // Update button label
-        const btn = document.getElementById("repaintBtn");
-        btn.textContent = `Repaint (${name})`;
+        // removed dynamic button label updates (no theme names on button)
       };
 
       // ------------------------------ Utilities ------------------------------
@@ -386,25 +372,19 @@
           applyTheme(themeName);
           config.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
         }
-
         const container = document.getElementById('container');
         container.classList.add('hidden'); // fade out
-        // Clear and regenerate
-        container.innerHTML = '';
+        container.innerHTML = '';          // Clear and regenerate
         generateChars();
         mountChars();
-        // reset animation timing
-        state.frame = 0;
+        state.frame = 0;                   // reset animation timing
         state.nextFrameTime = 0;
-
-        // fade back in after next paint
-        requestAnimationFrame(() => container.classList.remove('hidden'));
+        requestAnimationFrame(() => container.classList.remove('hidden')); // fade back in
       };
 
       const start = () => {
         applyTheme(THEME_ORDER[themeIndex]);
         config.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
-
         generateChars();
         mountChars();
         requestAnimationFrame(animateGrid);
