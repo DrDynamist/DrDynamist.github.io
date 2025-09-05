@@ -24,8 +24,7 @@
     }
     #container {
       margin: 0; padding: 0; min-height: 100vh; overflow: auto;
-      line-height: 1.35; white-space: pre; /* fixed grid text */
-      position: relative;
+      line-height: 1.35; white-space: pre; position: relative;
     }
     #container a { color: inherit; text-decoration: none; }
     #container a:hover { text-decoration: underline; }
@@ -46,44 +45,31 @@
     }
     #repaintBtn:hover { opacity: 0.8; }
 
-    /* small helper to avoid layout jump while repainting */
-    .fade {
-      transition: opacity 150ms ease;
-    }
+    .fade { transition: opacity 150ms ease; }
     .fade.hidden { opacity: 0; }
   </style>
 </head>
 <body>
-  <button id="repaintBtn" title="Cycle theme & repaint the animation">Repaint (Default)</button>
+  <button id="repaintBtn" title="Cycle theme & repaint the animation">Repaint</button>
   <div id="container" class="fade"></div>
 
   <script>
     document.fonts.ready.then(() => {
-      // ------------------------------ Themes ------------------------------
+      // ------------------------------ Themes (updated) ------------------------------
       const THEMES = {
-        // Keeps your current scheme
-        "Default":       { bg: "#fffbef", fg: "#222222" },
-
-        // Variations (exact names and colors you gave)
-        "Castle":        { bg: "#171628", fg: "#ffffff" },
-        "ProveIt":       { bg: "#223c5f", fg: "#ff3300" },
-        "HakunaMatata":  { bg: "#0c2c73", fg: "#0b2e72" },
-        "Drawer":        { bg: "#0c2c73", fg: "#0c2c73" }, // text same as bg (intentionally per spec)
-        "tooSigma":      { bg: "#00a5bd", fg: "#edf9fa" },
-        "theRiver":      { bg: "#0e4888", fg: "#e7f2f8" },
-        "PlainJane":     { bg: "#ffffff", fg: "#000000" },
+        "Default":         { bg: "#fffbef", fg: "#222222" }, // keeping your previous default
+        "Castle":          { bg: "#171628", fg: "#ffffff" },
+        "ProveIt":         { bg: "#223c5f", fg: "#ff3300" },
+        "HakunaMatata":    { bg: "#0c2c73", fg: "#0b2e72" },
+        "Drawer":          { bg: "#0c2c73", fg: "#02d3be" }, // updated text color
+        "tooSigma":        { bg: "#00a5bd", fg: "#edf9fa" },
+        "theRiver":        { bg: "#0e4888", fg: "#e7f2f8" },
+        "PlainJane":       { bg: "#ffffff", fg: "#000000" },
         "insiderTrader27": { bg: "#005e9c", fg: "#00aeef" },
       };
       const THEME_ORDER = [
-        "Default",
-        "Castle",
-        "ProveIt",
-        "HakunaMatata",
-        "Drawer",
-        "tooSigma",
-        "theRiver",
-        "PlainJane",
-        "insiderTrader27",
+        "Default","Castle","ProveIt","HakunaMatata","Drawer",
+        "tooSigma","theRiver","PlainJane","insiderTrader27",
       ];
       let themeIndex = 0;
 
@@ -93,10 +79,6 @@
         document.documentElement.style.setProperty("--fg", t.fg);
         document.body.style.background = t.bg;
         document.body.style.color = t.fg;
-
-        // Update button label
-        const btn = document.getElementById("repaintBtn");
-        btn.textContent = `Repaint (${name})`;
       };
 
       // ------------------------------ Utilities ------------------------------
@@ -106,7 +88,7 @@
       };
 
       const dedent = (text) => {
-        const lines = text.split('\n');
+        const lines = text split('\n');
         const nonEmpty = lines.filter(line => line.trim());
         if (!nonEmpty.length) return text;
         const indent = Math.min(...nonEmpty.map(line => line.match(/^ */)[0].length));
@@ -177,10 +159,10 @@
 
       const state = { chars: [], numRows: 0, numColumns: 0, frame: 0, nextFrameTime: 0 };
 
-      // ------------------------------ Tag-aware text parsing ------------------------------
+      // ------------------------------ Parser ------------------------------
       const getCharsFromText = (text) => {
         const chars = [];
-        const activeTags = [];
+        const active = [];
         const cps = [...text];
         for (let i = 0; i < cps.length; i++) {
           if (cps[i] === '[' && cps.includes(']', i)) {
@@ -188,16 +170,16 @@
             const tag = cps.slice(i + 1, j).join('');
             if (tag[0] === '/') {
               const name = tag.slice(1);
-              const idx = activeTags.findIndex(t => t.name === name);
-              if (idx !== -1) activeTags.splice(idx, 1);
+              const idx = active.findIndex(t => t.name === name);
+              if (idx !== -1) active.splice(idx, 1);
             } else {
               const [name, ...args] = tag.split(/\s+/);
-              activeTags.push({ name, args });
+              active.push({ name, args });
             }
             i = j;
             continue;
           }
-          chars.push({ id: `text-${i}`, char: cps[i], tags: [...activeTags] });
+          chars.push({ id: `text-${i}`, char: cps[i], tags: [...active] });
         }
         return chars;
       };
@@ -386,38 +368,32 @@
           applyTheme(themeName);
           config.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
         }
-
         const container = document.getElementById('container');
-        container.classList.add('hidden'); // fade out
-        // Clear and regenerate
-        container.innerHTML = '';
-        generateChars();
-        mountChars();
-        // reset animation timing
-        state.frame = 0;
+        container.classList.add('hidden');   // fade out
+        container.innerHTML = '';            // clear
+        generateChars();                     // regenerate
+        mountChars();                        // re-mount
+        state.frame = 0;                     // reset animation
         state.nextFrameTime = 0;
-
-        // fade back in after next paint
-        requestAnimationFrame(() => container.classList.remove('hidden'));
+        requestAnimationFrame(() => container.classList.remove('hidden')); // fade in
       };
 
       const start = () => {
         applyTheme(THEME_ORDER[themeIndex]);
         config.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
-
         generateChars();
         mountChars();
         requestAnimationFrame(animateGrid);
       };
 
-      // Button wiring
+      // Button wiring: cycle theme silently (no names shown anywhere)
       document.getElementById('repaintBtn').addEventListener('click', () => {
         themeIndex = (themeIndex + 1) % THEME_ORDER.length;
         repaint(THEME_ORDER[themeIndex]);
       });
 
       start();
-      // Optional: repaint on resize for a crisp layout
+      // Optional: repaint on resize
       // window.addEventListener('resize', () => repaint(THEME_ORDER[themeIndex]));
     });
   </script>
