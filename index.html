@@ -11,29 +11,100 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap">
 
   <style>
+    :root {
+      --bg: #fffbef; /* Default */
+      --fg: #222222;
+    }
     html, body { height: 100%; margin: 0; padding: 0; }
-    body { font-family: 'Source Code Pro', monospace; font-size: 15px; color: #222; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Source Code Pro', monospace;
+      font-size: 15px;
+    }
     #container {
       margin: 0; padding: 0; min-height: 100vh; overflow: auto;
-      line-height: 1.35; white-space: pre; /* text is placed on a fixed grid */
+      line-height: 1.35; white-space: pre; /* fixed grid text */
+      position: relative;
     }
-    /* Links inherit color; underline on hover for clarity */
     #container a { color: inherit; text-decoration: none; }
     #container a:hover { text-decoration: underline; }
+
+    /* Repaint button */
+    #repaintBtn {
+      position: fixed;
+      top: 10px; right: 10px;
+      z-index: 1000;
+      border: 1px solid currentColor;
+      background: transparent;
+      color: var(--fg);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: inherit; font-size: 14px;
+      cursor: pointer;
+      backdrop-filter: blur(2px);
+    }
+    #repaintBtn:hover { opacity: 0.8; }
+
+    /* small helper to avoid layout jump while repainting */
+    .fade {
+      transition: opacity 150ms ease;
+    }
+    .fade.hidden { opacity: 0; }
   </style>
 </head>
 <body>
-  <div id="container"></div>
+  <button id="repaintBtn" title="Cycle theme & repaint the animation">Repaint (Default)</button>
+  <div id="container" class="fade"></div>
 
   <script>
     document.fonts.ready.then(() => {
+      // ------------------------------ Themes ------------------------------
+      const THEMES = {
+        // Keeps your current scheme
+        "Default":       { bg: "#fffbef", fg: "#222222" },
+
+        // Variations (exact names and colors you gave)
+        "Castle":        { bg: "#171628", fg: "#ffffff" },
+        "ProveIt":       { bg: "#223c5f", fg: "#ff3300" },
+        "HakunaMatata":  { bg: "#0c2c73", fg: "#0b2e72" },
+        "Drawer":        { bg: "#0c2c73", fg: "#0c2c73" }, // text same as bg (intentionally per spec)
+        "tooSigma":      { bg: "#00a5bd", fg: "#edf9fa" },
+        "theRiver":      { bg: "#0e4888", fg: "#e7f2f8" },
+        "PlainJane":     { bg: "#ffffff", fg: "#000000" },
+        "insiderTrader27": { bg: "#005e9c", fg: "#00aeef" },
+      };
+      const THEME_ORDER = [
+        "Default",
+        "Castle",
+        "ProveIt",
+        "HakunaMatata",
+        "Drawer",
+        "tooSigma",
+        "theRiver",
+        "PlainJane",
+        "insiderTrader27",
+      ];
+      let themeIndex = 0;
+
+      const applyTheme = (name) => {
+        const t = THEMES[name] || THEMES["Default"];
+        document.documentElement.style.setProperty("--bg", t.bg);
+        document.documentElement.style.setProperty("--fg", t.fg);
+        document.body.style.background = t.bg;
+        document.body.style.color = t.fg;
+
+        // Update button label
+        const btn = document.getElementById("repaintBtn");
+        btn.textContent = `Repaint (${name})`;
+      };
+
       // ------------------------------ Utilities ------------------------------
       const random = {
         sampleUniform: (min, max) => min + Math.random() * (max - min),
         sampleUniformInt: (min, max) => Math.floor(min + Math.random() * (max - min + 1)),
       };
 
-      // Remove leading whitespace from each line so template strings are tidy
       const dedent = (text) => {
         const lines = text.split('\n');
         const nonEmpty = lines.filter(line => line.trim());
@@ -47,9 +118,9 @@
         fontSize: 15,
         charWidth: 15 * 0.6,
         charHeight: 15 * 1.35,
-        backgroundColor: "#fffbef",
-        maxFrame: 300,   // how long the “flight” lasts
-        intervalMs: 15,  // frame pacing
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue("--bg").trim(),
+        maxFrame: 300,
+        intervalMs: 15,
         content: dedent(`
           [b]Nicholas Amadeus[/b]
 
@@ -60,7 +131,7 @@
 
           I am an undergraduate student of pure mathematics and statistics at the University of Michigan.
 
-          My area of study/research is primarily centered on probability theory and optimal transport.
+          My area of study/research is primarily centered on probability theory and applied functional analysis.
           In particular, high dimensional probability (and its applications) are my focus.
           [link https://www.math.uci.edu/~rvershyn/papers/HDP-book/HDP-book.html]Here's my favourite text on the topic by Roman Vershynin[/link].
 
@@ -74,13 +145,10 @@
           In Progress.
 
           Current Projects:
-           - Distributionally Robust Optimization 
-           - TimeSeriesAnalysis 
-
-          Past Projects / Publications:
-           - 
            - Markowitz Portfolio optimization applet (finance)
            - Geometry of integers (math | group theory / number theory)
+
+          Past Projects / Publications:
            - Smooth manifolds and Stokes' Theorems (MathDRP | topology)
            - Noether's Invariance Theorems and Conservation Laws (Physics)
            - Fractal generators (fractals | python)
@@ -95,7 +163,7 @@
           Books speak volumes about an individual (pun intended).
           Feel free to [link books.html]check out what I love to read[/link].
 
-          Other miscellaneous tidbits of my life are listed on the "Personal" page. 
+          Other miscellaneous tidbits of my life are listed on the "Personal" page.
 
 
           [b]Contact Me[/b]
@@ -103,26 +171,24 @@
           [link contact.html]Click here to find my vita, credentials, and contact information[/link].
 
 
-          [i]Last updated - 4/9/2025[/i]
+          [i]Last updated - 17/9/2024[/i]
         `),
       };
 
       const state = { chars: [], numRows: 0, numColumns: 0, frame: 0, nextFrameTime: 0 };
 
-      // ------------------------------ Tag-aware text to char array ------------------------------
-      // Supports [b] [/b], [i] [/i], [link URL] [/link]
+      // ------------------------------ Tag-aware text parsing ------------------------------
       const getCharsFromText = (text) => {
         const chars = [];
         const activeTags = [];
-        const cps = [...text]; // unicode-safe
-
+        const cps = [...text];
         for (let i = 0; i < cps.length; i++) {
           if (cps[i] === '[' && cps.includes(']', i)) {
             const j = cps.indexOf(']', i);
             const tag = cps.slice(i + 1, j).join('');
             if (tag[0] === '/') {
-              const tagName = tag.slice(1);
-              const idx = activeTags.findIndex(t => t.name === tagName);
+              const name = tag.slice(1);
+              const idx = activeTags.findIndex(t => t.name === name);
               if (idx !== -1) activeTags.splice(idx, 1);
             } else {
               const [name, ...args] = tag.split(/\s+/);
@@ -136,7 +202,6 @@
         return chars;
       };
 
-      // Simple greedy wrapper by character count (breaks on spaces when possible)
       const wrapText = (chars, width) => {
         const lines = [];
         let line = [];
@@ -159,10 +224,8 @@
         let numColumns = Math.floor((window.innerWidth - 1) / config.charWidth);
         if (numColumns < 25) numColumns = 30;
 
-        // Parse content
         let chars = getCharsFromText(config.content);
 
-        // Decide wrapping width (60–80% of columns depending on screen width)
         const sizeWeight = Math.min(1, Math.max(0, (window.innerWidth - 600) / 1000));
         const numWrapColumns = Math.ceil(numColumns * (0.6 * sizeWeight + 0.8 * (1 - sizeWeight)));
 
@@ -174,15 +237,14 @@
         chars = [];
         for (let y = 0; y < lines.length; y++) {
           for (let x = 0; x < lines[y].length; x++) {
-            const char = lines[y][x];
-            char.weight = random.sampleUniform(0, 1);
-            char.position = { x: random.sampleUniformInt(0, numColumns), y: random.sampleUniformInt(0, numRows) };
-            char.finalPosition = { x: startX + x, y: startY + y };
-            chars.push(char);
+            const c = lines[y][x];
+            c.weight = random.sampleUniform(0, 1);
+            c.position = { x: random.sampleUniformInt(0, numColumns), y: random.sampleUniformInt(0, numRows) };
+            c.finalPosition = { x: startX + x, y: startY + y };
+            chars.push(c);
           }
         }
 
-        // Keep gaps for spaces/newlines by removing their elements but preserving positions of others
         chars = chars.filter(c => (c.char !== ' ' && c.char !== '\n') || c.tags.length > 0);
 
         state.chars = chars;
@@ -204,7 +266,6 @@
         for (const { name, args } of tags) {
           if (name === 'link') {
             el.href = args[0] || '#';
-            // open external links in new tab, internal stay same tab
             if (/^https?:\/\//i.test(args[0])) el.target = '_blank';
           } else if (name === 'b') {
             el.style.fontWeight = '700';
@@ -257,7 +318,7 @@
         const sorted = [...chars].sort((a, b) => {
           const distA = Math.abs(a.finalPosition.y - a.position.y) + Math.abs(a.finalPosition.x - a.position.x);
           const distB = Math.abs(b.finalPosition.y - b.position.y) + Math.abs(b.finalPosition.x - b.position.x);
-          return (distB - distA) + random.sampleUniform(-3, 3);
+          return (distB - distA) + Math.random() * 6 - 3;
         });
 
         for (const ch of sorted) {
@@ -275,7 +336,7 @@
             move.y += w * toFinal.y / dFinal;
           }
 
-          // Gentle clockwise curl around viewport center (strong early, fades out)
+          // Clockwise curl around viewport center (strong early, fades out)
           const centerX = (window.scrollX + window.innerWidth / 2) / charWidth;
           const centerY = (window.scrollY + window.innerHeight / 2) / charHeight;
           const toCenter = {
@@ -308,25 +369,56 @@
 
       const updateCharElementPosition = ({ position: { x, y }, id }) => {
         const el = document.getElementById(`char-${id}`);
+        if (!el) return;
         el.style.top = `${y * config.charHeight}px`;
         el.style.left = `${x * config.charWidth}px`;
       };
 
-      // ------------------------------ Boot ------------------------------
-      const start = () => {
-        document.body.style.background = config.backgroundColor;
-        generateChars();
-
+      // ------------------------------ Boot & Repaint ------------------------------
+      const mountChars = () => {
         const container = document.getElementById('container');
         const elements = [...state.chars.map(createCharElement), createCornerElement()];
         elements.forEach(el => container.appendChild(el));
+      };
 
+      const repaint = (themeName) => {
+        if (themeName) {
+          applyTheme(themeName);
+          config.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+        }
+
+        const container = document.getElementById('container');
+        container.classList.add('hidden'); // fade out
+        // Clear and regenerate
+        container.innerHTML = '';
+        generateChars();
+        mountChars();
+        // reset animation timing
+        state.frame = 0;
+        state.nextFrameTime = 0;
+
+        // fade back in after next paint
+        requestAnimationFrame(() => container.classList.remove('hidden'));
+      };
+
+      const start = () => {
+        applyTheme(THEME_ORDER[themeIndex]);
+        config.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+
+        generateChars();
+        mountChars();
         requestAnimationFrame(animateGrid);
       };
 
+      // Button wiring
+      document.getElementById('repaintBtn').addEventListener('click', () => {
+        themeIndex = (themeIndex + 1) % THEME_ORDER.length;
+        repaint(THEME_ORDER[themeIndex]);
+      });
+
       start();
-      // (Optional) Reflow on resize—comment out if you prefer a static layout.
-      // window.addEventListener('resize', () => { location.reload(); });
+      // Optional: repaint on resize for a crisp layout
+      // window.addEventListener('resize', () => repaint(THEME_ORDER[themeIndex]));
     });
   </script>
 </body>
