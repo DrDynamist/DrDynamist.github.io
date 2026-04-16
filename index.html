@@ -133,14 +133,20 @@
       `
     });
 
-    document.getElementById("repaintBtn").addEventListener("click", () => {
-      SiteTheme.repaint();
-      app.renderStatic();
-    });
+    const repaintBtn = document.getElementById("repaintBtn");
+    if (repaintBtn) {
+      repaintBtn.addEventListener("click", () => {
+        SiteTheme.repaint();
+        app.renderStatic();
+      });
+    }
 
-    document.getElementById("vortifyBtn").addEventListener("click", () => {
-      app.vortiFy();
-    });
+    const vortifyBtn = document.getElementById("vortifyBtn");
+    if (vortifyBtn) {
+      vortifyBtn.addEventListener("click", () => {
+        app.vortiFy();
+      });
+    }
 
     app.firstLoadBehavior();
   });
