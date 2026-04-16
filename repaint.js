@@ -50,10 +50,6 @@
 
   function initTheme() {
     applyTheme(THEME_ORDER[getThemeIndex()]);
-    const btn = document.getElementById("repaintBtn");
-    if (btn) {
-      btn.addEventListener("click", repaint);
-    }
   }
 
   window.SiteTheme  = {
