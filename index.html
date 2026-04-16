@@ -46,13 +46,29 @@
     }
     #repaintBtn:hover { opacity: 0.8; }
 
+    #vortifyBtn {
+      position: fixed;
+      top: 10px; right: 105px;
+      z-index: 1000;
+      border: 1px solid currentColor;
+      background: transparent;
+      color: var(--fg);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: inherit; font-size: 14px;
+      cursor: pointer;
+      backdrop-filter: blur(2px);
+    }
+    #vortifyBtn:hover { opacity: 0.8; }
+
     /* small helper to avoid layout jump while repainting */
     .fade { transition: opacity 150ms ease; }
     .fade.hidden { opacity: 0; }
   </style>
 </head>
 <body>
-  <button id="repaintBtn" title="Cycle theme & repaint the animation">Repaint</button>
+  <button id="repaintBtn" title="Cycle theme & repaint">Repaint</button>
+  <button id="vortifyBtn" title="Replay the vortex animation">vorti-fy</button>
   <div id="container" class="fade"></div>
 
   <script>
@@ -236,6 +252,7 @@
       };
 
       const state = { chars: [], numRows: 0, numColumns: 0, frame: 0, nextFrameTime: 0 };
+      const VORTI_KEY = "indexVortexPlayed";
 
       // ------------------------------ Tag-aware text parsing ------------------------------
       const getCharsFromText = (text) => {
@@ -312,6 +329,12 @@
         state.numColumns = numColumns;
       };
 
+      const settleCharsImmediately = () => {
+        state.chars.forEach(ch => {
+          ch.position = { ...ch.finalPosition };
+        });
+      };
+
       const createCharElement = ({ position: { x, y }, id, tags, char }) => {
         const { charWidth, charHeight } = config;
         const el = document.createElement('a');
@@ -349,6 +372,14 @@
 
       // ------------------------------ Animation ------------------------------
       const animateGrid = (t) => {
+        if (state.frame >= config.maxFrame) {
+          state.chars.forEach(ch => {
+            ch.position = { ...ch.finalPosition };
+          });
+          state.chars.forEach(updateCharElementPosition);
+          return;
+        }
+
         if (t > state.nextFrameTime) {
           evolveChars();
           state.chars.forEach(updateCharElementPosition);
@@ -441,33 +472,64 @@
         elements.forEach(el => container.appendChild(el));
       };
 
-      const repaint = (themeName) => {
+      const renderStatic = (themeName) => {
         if (themeName) {
           applyTheme(themeName);
           config.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
         }
         const container = document.getElementById('container');
-        container.classList.add('hidden'); // fade out
-        container.innerHTML = '';          // Clear and regenerate
+        container.classList.add('hidden');
+        container.innerHTML = '';
+        generateChars();
+        settleCharsImmediately();
+        mountChars();
+        state.frame = config.maxFrame;
+        state.nextFrameTime = 0;
+        requestAnimationFrame(() => container.classList.remove('hidden'));
+      };
+
+      const vortiFy = () => {
+        const container = document.getElementById('container');
+        container.classList.add('hidden');
+        container.innerHTML = '';
         generateChars();
         mountChars();
-        state.frame = 0;                   // reset animation timing
+        state.frame = 0;
         state.nextFrameTime = 0;
-        requestAnimationFrame(() => container.classList.remove('hidden')); // fade back in
+        requestAnimationFrame(() => {
+          container.classList.remove('hidden');
+          requestAnimationFrame(animateGrid);
+        });
+      };
+
+      const repaint = (themeName) => {
+        if (themeName) {
+          applyTheme(themeName);
+          config.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+        }
+        renderStatic();
       };
 
       const start = () => {
         applyTheme(THEME_ORDER[themeIndex]);
         config.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
-        generateChars();
-        mountChars();
-        requestAnimationFrame(animateGrid);
+        const alreadyPlayed = localStorage.getItem(VORTI_KEY) === "true";
+        if (alreadyPlayed) {
+          renderStatic();
+        } else {
+          vortiFy();
+          localStorage.setItem(VORTI_KEY, "true");
+        }
       };
 
       // Button wiring
       document.getElementById('repaintBtn').addEventListener('click', () => {
         themeIndex = (themeIndex + 1) % THEME_ORDER.length;
         repaint(THEME_ORDER[themeIndex]);
+      });
+
+      document.getElementById('vortifyBtn').addEventListener('click', () => {
+        vortiFy();
       });
 
       start();
