@@ -1,153 +1,232 @@
-<script src="repaint.js"></script>
-<script src="vortify.js"></script>
-<script>
-  document.fonts.ready.then(() => {
-    SiteTheme.initTheme();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nicholas Amadeus</title>
 
-    const app = SiteVortify.createVortifyApp({
-      containerId: "container",
-      fontSize: 15,
-      maxFrame: 500,
-      intervalMs: 15,
-      content: `
-        [b]Nicholas Amadeus[/b]
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap">
 
-        [link index.html]Home[/link]  •  [link research.html]Research[/link]  •  [link personal.html]Personal[/link]  •  [link publications.html]Publications[/link]  •  [link contact.html]Contact[/link]
+  <style>
+    :root {
+      --bg: #fffbef; /* Default */
+      --fg: #222222;
+    }
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Source Code Pro', monospace;
+      font-size: 15px;
+    }
+    #container {
+      margin: 0; padding: 0; min-height: 100vh; overflow: auto;
+      line-height: 1.35; white-space: pre; /* fixed grid text */
+      position: relative;
+    }
+    #container a { color: inherit; text-decoration: none; }
+    #container a:hover { text-decoration: underline; }
 
+    /* Repaint button */
+    #repaintBtn {
+      position: fixed;
+      top: 10px; right: 10px;
+      z-index: 1000;
+      border: 1px solid currentColor;
+      background: transparent;
+      color: var(--fg);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: inherit; font-size: 14px;
+      cursor: pointer;
+      backdrop-filter: blur(2px);
+    }
+    #repaintBtn:hover { opacity: 0.8; }
 
-        [b]About[/b]
+    #vortifyBtn {
+      position: fixed;
+      top: 10px; right: 105px;
+      z-index: 1000;
+      border: 1px solid currentColor;
+      background: transparent;
+      color: var(--fg);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: inherit; font-size: 14px;
+      cursor: pointer;
+      backdrop-filter: blur(2px);
+    }
+    #vortifyBtn:hover { opacity: 0.8; }
 
-        [link principles.html ]  I am [/link] an undergraduate student of pure mathematics, statistics, and economics at the University of Michigan.
+    /* small helper to avoid layout jump while repainting */
+    .fade { transition: opacity 150ms ease; }
+    .fade.hidden { opacity: 0; }
+  </style>
+</head>
+<body>
+  <button id="repaintBtn" title="Cycle theme & repaint">Repaint</button>
+  <button id="vortifyBtn" title="Replay the vortex animation">vorti-fy</button>
+  <div id="container" class="fade"></div>
 
-        My area of study/research is primarily centered on probability theory.
-        In particular, high dimensional probability (and its applications) are my focus.
-        [link https://www.math.uci.edu/~rvershyn/papers/HDP-book/HDP-book.html]Here's my favourite text on the topic by Roman Vershynin[/link].
-        
-        My current area of focus is on optimal transport, and thus my current readings are as follows:
-         - Cédric Villani :  [link https://link.springer.com/book/10.1007/978-3-540-71050-9] Classical Text on OT [/link].
-         - Peyré & Cuturi : [link https://arxiv.org/abs/1803.00567] Applied Treatise. [/link].
-         - Institut Camille Jordan : [link https://math.univ-lyon1.fr/~santambrogio/OTAM-cvgmt.pdf] Another applied version. I cycle between the Peyré and ICJ books [/link].
-         - Kantorovich Institute : [link kantorovich.org ] General resources on OTT [/link].
-         
-        I also create projects pertaining to quantitative finance. 
-        
-        My past projects/work delves more into mathematical physics (specifically Lagrangian mechanics), pure mathematics, and bioinformatics.
-        You can check them [link projects.html]here[/link]. 
+  <script src="repaint.js"></script>
+  <script src="vortify.js"></script>
+  <script>
+    document.fonts.ready.then(() => {
+      SiteTheme.initTheme();
 
+      const app = SiteVortify.createVortifyApp({
+        containerId: "container",
+        fontSize: 15,
+        maxFrame: 500,
+        intervalMs: 15,
+        content: `
+          [b]Nicholas Amadeus[/b]
 
-        [b]Portfolio[/b]
-
-        In Progress.
-
-        Current Projects:
-         - Distributionally Robust Optimization and applied Optimal Transport Theory
-         - Regime detection models
-        Past Projects / Publications:
-         - Risk-Aware Portfolio Construction via Contextual Multi Armed Bandits (quant | bayesian) [python]
-         - Prediction of Bitcoin/USD Order Book Movements SVM and Tree-Based Ensembles (quant | ml) [python]
-         - Rough Isometry of integers (math | group theory / number theory)
-         - Smooth manifolds and Stokes' Theorems (MathDRP | topology)
-         - Noether's Invariance Theorems and Conservation Laws (Physics)
-         - Fractal generators (fractals | python) [python]
-        
-        [b]Experience[/b]
-
-        May - August 2025
-        Student Researcher, University of Michigan Computational Medicine Lab (research)
-        I conducted research at the Rajapakse Lab under the Department of Computational Medicine and Bioinformatics @ UM. I was mentored by Dr. Indika Rajapakse. 
-        Under Dr. Rajapakse's tutelage, we are working on methods in Monge-Kantorovich/Optimal transportation theory applied to cellular reprogramming and advancements in healthcare. 
-        In particular, we studied and proposed tailored implementation plans for  [link https://www.cell.com/cell/fulltext/S0092-8674(19)30039-X] Waddington-Optimal transport [/link]
-
-        June - July 2024
-        Data scientist, Garuda Metalindo, Jakarta, Indonesia (industry)
-        Engineered C++ code and Python scripts to streamline data processing for inventory management of over 2.5 billion products and 50,000 variants annually. 
-        Developed a fraud-detection system on Python using machine learning to detect suspicious inventory shortages, accounting errors, and production measurement errors. 
-        Utilized SQL and relational database knowledge to analyze and develop efficient ways of handling production and financial data.
-
-        September 2023 - Present
-        Michigan Math Laboratory                   
-        Part time staff at the Michigan Mathematics Tutoring and Testing Lab. 
-        Taught students subjects from linear algebra, ordinary differential equations, and vector calculus. 
-        Maintained a secure testing environment for the Michigan Calculus Sequence Bi-semester examinations
-
-        February 2018- March 2018
-        Deloitte Indonesia, Jakarta, Indonesia            
-        Reviewed risk database reports for compliance and fraud prevention in current and past bank clients. 
-        Applied statistical methods to analyze historical client data, identifying patterns of risk exposure across market, credit, and operational domains. 
-        Assisted development of HR risk assessment frameworks aimed at reducing exposure to employee-related liabilities and compensation claims. 
-        
-        [b]Courses[/b]
-        Some relevant courses I've taken over the course of my studies at the University of Michigan
-        Relevant Coursework @ Michigan:
-        ===============
-        Mathematics Coursework:
-        Math 312 - Applied Abstract Algebra
-        Math 316 - Differential Equations 
-        Math 351 - Principles of Real Analysis
-        Math 423 - Mathematical Finance
-        Math 433 - Differential Geometry
-        Math 440 - Lab of Geometry (Research Programme)
-        Math 462 - Mathematical Modelling
-        Math 472 - Numerical Analysis for Finance 
-        Math 507 - Mathematical Methods of Algorithmic Trading*
-        Math 525 - Probability Theory
-        Math 526 - Discrete-State Stochastic Processes
-        Math 547 - Mathematical Methods of Data Analysis
-        Math 551 - Measure Theory*
-        Math 623 - Computational Finance*
-        Math 628 - Machine Learning for Quantitative Finance
-        ===============
-        Statistics Coursework:
-        Datasci 306 - Statistical Computing
-        Stats 413 - Applied Regression Analysis
-        Stats 415 - Statistical Learning and Datamining
-        Stats 426 - Theoretical Statistics
-        Stats 485 - Capstone in Statistical Methods
-        Stats 500 - Regression Analysis
-        Datasci 651 - Topics in Bayesian Analysis (cross-listed: Stats 551)          
-        ===============
-        Economics Coursework:
-        Econ 401 - Intermediate Microeconomic Theory
-        Econ 402 - Intermediate Macroeconomic Theory
-        Econ 409 - Game Theory
-        Econ 452 - Honors Econometrics II
-
-        [b]Myself(?)[/b]
-
-        You can get to know me more holistically through my hobbies and the little activities I enjoy.
-
-        [link URL]Species identification[/link] is a childhood hobby that still holds dear to my heart until today.
-
-        Books speak volumes about an individual (pun intended).
-        Feel free to [link books.html]check out what I love to read[/link].
-
-        Other miscellaneous tidbits of my life are listed on the "Personal" page.
+          [link index.html]Home[/link]  •  [link research.html]Research[/link]  •  [link personal.html]Personal[/link]  •  [link publications.html]Publications[/link]  •  [link contact.html]Contact[/link]
 
 
-        [b]Contact Me[/b]
+          [b]About[/b]
 
-        [link Namadeus ResumeAlt Research2.pdf]Click here to find my vita, credentials, and contact information[/link].
+          [link principles.html ]  I am [/link] an undergraduate student of pure mathematics, statistics, and economics at the University of Michigan.
+
+          My area of study/research is primarily centered on probability theory.
+          In particular, high dimensional probability (and its applications) are my focus.
+          [link https://www.math.uci.edu/~rvershyn/papers/HDP-book/HDP-book.html]Here's my favourite text on the topic by Roman Vershynin[/link].
+          
+          My current area of focus is on optimal transport, and thus my current readings are as follows:
+           - Cédric Villani :  [link https://link.springer.com/book/10.1007/978-3-540-71050-9] Classical Text on OT [/link].
+           - Peyré & Cuturi : [link https://arxiv.org/abs/1803.00567] Applied Treatise. [/link].
+           - Institut Camille Jordan : [link https://math.univ-lyon1.fr/~santambrogio/OTAM-cvgmt.pdf] Another applied version. I cycle between the Peyré and ICJ books [/link].
+           - Kantorovich Institute : [link kantorovich.org ] General resources on OTT [/link].
+           
+          I also create projects pertaining to quantitative finance. 
+          
+          My past projects/work delves more into mathematical physics (specifically Lagrangian mechanics), pure mathematics, and bioinformatics.
+          You can check them [link projects.html]here[/link]. 
 
 
-        [i]Last updated - 16/04/2026[/i]
-      `
+          [b]Portfolio[/b]
+
+          In Progress.
+
+          Current Projects:
+           - Distributionally Robust Optimization and applied Optimal Transport Theory
+           - Regime detection models
+          Past Projects / Publications:
+           - Risk-Aware Portfolio Construction via Contextual Multi Armed Bandits (quant | bayesian) [python]
+           - Prediction of Bitcoin/USD Order Book Movements SVM and Tree-Based Ensembles (quant | ml) [python]
+           - Rough Isometry of integers (math | group theory / number theory)
+           - Smooth manifolds and Stokes' Theorems (MathDRP | topology)
+           - Noether's Invariance Theorems and Conservation Laws (Physics)
+           - Fractal generators (fractals | python) [python]
+          
+          [b]Experience[/b]
+
+          May - August 2025
+          Student Researcher, University of Michigan Computational Medicine Lab (research)
+          I conducted research at the Rajapakse Lab under the Department of Computational Medicine and Bioinformatics @ UM. I was mentored by Dr. Indika Rajapakse. 
+          Under Dr. Rajapakse's tutelage, we are working on methods in Monge-Kantorovich/Optimal transportation theory applied to cellular reprogramming and advancements in healthcare. 
+          In particular, we studied and proposed tailored implementation plans for  [link https://www.cell.com/cell/fulltext/S0092-8674(19)30039-X] Waddington-Optimal transport [/link]
+
+          June - July 2024
+          Data scientist, Garuda Metalindo, Jakarta, Indonesia (industry)
+          Engineered C++ code and Python scripts to streamline data processing for inventory management of over 2.5 billion products and 50,000 variants annually. 
+          Developed a fraud-detection system on Python using machine learning to detect suspicious inventory shortages, accounting errors, and production measurement errors. 
+          Utilized SQL and relational database knowledge to analyze and develop efficient ways of handling production and financial data.
+
+          September 2023 - Present
+          Michigan Math Laboratory                   
+          Part time staff at the Michigan Mathematics Tutoring and Testing Lab. 
+          Taught students subjects from linear algebra, ordinary differential equations, and vector calculus. 
+          Maintained a secure testing environment for the Michigan Calculus Sequence Bi-semester examinations
+
+          February 2018- March 2018
+          Deloitte Indonesia, Jakarta, Indonesia            
+          Reviewed risk database reports for compliance and fraud prevention in current and past bank clients. 
+          Applied statistical methods to analyze historical client data, identifying patterns of risk exposure across market, credit, and operational domains. 
+          Assisted development of HR risk assessment frameworks aimed at reducing exposure to employee-related liabilities and compensation claims. 
+          
+          [b]Courses[/b]
+          Some relevant courses I've taken over the course of my studies at the University of Michigan
+          Relevant Coursework @ Michigan:
+          ===============
+          Mathematics Coursework:
+          Math 312 - Applied Abstract Algebra
+          Math 316 - Differential Equations 
+          Math 351 - Principles of Real Analysis
+          Math 423 - Mathematical Finance
+          Math 433 - Differential Geometry
+          Math 440 - Lab of Geometry (Research Programme)
+          Math 462 - Mathematical Modelling
+          Math 472 - Numerical Analysis for Finance 
+          Math 507 - Mathematical Methods of Algorithmic Trading*
+          Math 525 - Probability Theory
+          Math 526 - Discrete-State Stochastic Processes
+          Math 547 - Mathematical Methods of Data Analysis
+          Math 551 - Measure Theory*
+          Math 623 - Computational Finance*
+          Math 628 - Machine Learning for Quantitative Finance
+          ===============
+          Statistics Coursework:
+          Datasci 306 - Statistical Computing
+          Stats 413 - Applied Regression Analysis
+          Stats 415 - Statistical Learning and Datamining
+          Stats 426 - Theoretical Statistics
+          Stats 485 - Capstone in Statistical Methods
+          Stats 500 - Regression Analysis
+          Datasci 651 - Topics in Bayesian Analysis (cross-listed: Stats 551)          
+          ===============
+          Economics Coursework:
+          Econ 401 - Intermediate Microeconomic Theory
+          Econ 402 - Intermediate Macroeconomic Theory
+          Econ 409 - Game Theory
+          Econ 452 - Honors Econometrics II
+
+          [b]Myself(?)[/b]
+
+          You can get to know me more holistically through my hobbies and the little activities I enjoy.
+
+          [link URL]Species identification[/link] is a childhood hobby that still holds dear to my heart until today.
+
+          Books speak volumes about an individual (pun intended).
+          Feel free to [link books.html]check out what I love to read[/link].
+
+          Other miscellaneous tidbits of my life are listed on the "Personal" page.
+
+
+          [b]Contact Me[/b]
+
+          [link Namadeus ResumeAlt Research2.pdf]Click here to find my vita, credentials, and contact information[/link].
+
+
+          [i]Last updated - 16/04/2026[/i]
+        `
+      });
+
+      const repaintBtn = document.getElementById("repaintBtn");
+      if (repaintBtn && app) {
+        repaintBtn.addEventListener("click", () => {
+          SiteTheme.repaint();
+          app.renderStatic();
+        });
+      }
+
+      const vortifyBtn = document.getElementById("vortifyBtn");
+      if (vortifyBtn && app) {
+        vortifyBtn.addEventListener("click", () => {
+          app.vortiFy();
+        });
+      }
+
+      if (app) {
+        app.firstLoadBehavior();
+      } else {
+        console.error("Missing #container element or vortify app failed to initialize.");
+      }
     });
-
-    const repaintBtn = document.getElementById("repaintBtn");
-    if (repaintBtn) {
-      repaintBtn.addEventListener("click", () => {
-        SiteTheme.repaint();
-        app.renderStatic();
-      });
-    }
-
-    const vortifyBtn = document.getElementById("vortifyBtn");
-    if (vortifyBtn) {
-      vortifyBtn.addEventListener("click", () => {
-        app.vortiFy();
-      });
-    }
-
-    app.firstLoadBehavior();
-  });
-</script>
+  </script>
+</body>
+</html>
