@@ -56,7 +56,7 @@
     }
   }
 
-  window.SiteRepaint = {
+  window.SiteTheme  = {
     initTheme,
     applyTheme,
     repaint,
