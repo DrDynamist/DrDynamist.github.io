@@ -1,541 +1,147 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nicholas Amadeus</title>
+<script src="js/repaint.js"></script>
+<script src="js/vortify.js"></script>
+<script>
+  document.fonts.ready.then(() => {
+    SiteTheme.initTheme();
 
-  <!-- Font -->
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap">
+    const app = SiteVortify.createVortifyApp({
+      containerId: "container",
+      fontSize: 15,
+      maxFrame: 500,
+      intervalMs: 15,
+      content: `
+        [b]Nicholas Amadeus[/b]
 
-  <style>
-    :root {
-      --bg: #fffbef; /* Default */
-      --fg: #222222;
-    }
-    html, body { height: 100%; margin: 0; padding: 0; }
-    body {
-      background: var(--bg);
-      color: var(--fg);
-      font-family: 'Source Code Pro', monospace;
-      font-size: 15px;
-    }
-    #container {
-      margin: 0; padding: 0; min-height: 100vh; overflow: auto;
-      line-height: 1.35; white-space: pre; /* fixed grid text */
-      position: relative;
-    }
-    #container a { color: inherit; text-decoration: none; }
-    #container a:hover { text-decoration: underline; }
+        [link index.html]Home[/link]  •  [link research.html]Research[/link]  •  [link personal.html]Personal[/link]  •  [link publications.html]Publications[/link]  •  [link contact.html]Contact[/link]
 
-    /* Repaint button */
-    #repaintBtn {
-      position: fixed;
-      top: 10px; right: 10px;
-      z-index: 1000;
-      border: 1px solid currentColor;
-      background: transparent;
-      color: var(--fg);
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-family: inherit; font-size: 14px;
-      cursor: pointer;
-      backdrop-filter: blur(2px);
-    }
-    #repaintBtn:hover { opacity: 0.8; }
 
-    #vortifyBtn {
-      position: fixed;
-      top: 10px; right: 105px;
-      z-index: 1000;
-      border: 1px solid currentColor;
-      background: transparent;
-      color: var(--fg);
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-family: inherit; font-size: 14px;
-      cursor: pointer;
-      backdrop-filter: blur(2px);
-    }
-    #vortifyBtn:hover { opacity: 0.8; }
+        [b]About[/b]
 
-    /* small helper to avoid layout jump while repainting */
-    .fade { transition: opacity 150ms ease; }
-    .fade.hidden { opacity: 0; }
-  </style>
-</head>
-<body>
-  <button id="repaintBtn" title="Cycle theme & repaint">Repaint</button>
-  <button id="vortifyBtn" title="Replay the vortex animation">vorti-fy</button>
-  <div id="container" class="fade"></div>
+        [link principles.html ]  I am  [/link] an undergraduate student of pure mathematics, statistics, and economics at the University of Michigan.
 
-  <script>
-    document.fonts.ready.then(() => {
-      // ------------------------------ Themes ------------------------------
-      const THEMES = {
-        "Default":       { bg: "#fffbef", fg: "#222222" },
-        "Castle":        { bg: "#171628", fg: "#ffffff" },
-        "ProveIt":       { bg: "#223c5f", fg: "#ff3300" },
-        "HakunaMatata":  { bg: "#0c2c73", fg: "#ffffff" },
-        "Drawer":        { bg: "#1d2643", fg: "#02d3be" },
-        "tooSigma":      { bg: "#00a5bd", fg: "#edf9fa" },
-        "PokerRiver":      { bg: "#0e4888", fg: "#e7f2f8" },
-        "PlainJane":     { bg: "#ffffff", fg: "#000000" },
-        "insiderTrader27": { bg: "#000000", fg: "#00aeef" },
-        "HormoneReplacementTherapy": { bg: "#fc8404", fg: "#ffffff" },
-        "Musashi": { bg: "#405270", fg: "#ffffff" },
-        "Root":     { bg: "#000000", fg: "#66b361" },
+        My area of study/research is primarily centered on probability theory.
+        In particular, high dimensional probability (and its applications) are my focus.
+        [link https://www.math.uci.edu/~rvershyn/papers/HDP-book/HDP-book.html]Here's my favourite text on the topic by Roman Vershynin[/link].
         
-      };
-      const THEME_ORDER = [
-        "Default","Castle","ProveIt","HakunaMatata","Drawer",
-        "tooSigma","PokerRiver","PlainJane","insiderTrader27","HormoneReplacementTherapy",
-        "Musashi", "Root",
-      ];
-      let themeIndex = 0;
-
-      const applyTheme = (name) => {
-        const t = THEMES[name] || THEMES["Default"];
-        document.documentElement.style.setProperty("--bg", t.bg);
-        document.documentElement.style.setProperty("--fg", t.fg);
-        document.body.style.background = t.bg;
-        document.body.style.color = t.fg;
-        // removed dynamic button label updates (no theme names on button)
-      };
-
-      // ------------------------------ Utilities ------------------------------
-      const random = {
-        sampleUniform: (min, max) => min + Math.random() * (max - min),
-        sampleUniformInt: (min, max) => Math.floor(min + Math.random() * (max - min + 1)),
-      };
-
-      const dedent = (text) => {
-        const lines = text.split('\n');
-        const nonEmpty = lines.filter(line => line.trim());
-        if (!nonEmpty.length) return text;
-        const indent = Math.min(...nonEmpty.map(line => line.match(/^ */)[0].length));
-        return lines.map(line => line.slice(indent)).join('\n');
-      };
-
-      // ------------------------------ Config ------------------------------
-      const config = {
-        fontSize: 15,
-        charWidth: 15 * 0.6,
-        charHeight: 15 * 1.35,
-        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue("--bg").trim(),
-        maxFrame: 650,
-        intervalMs: 15,
-        content: dedent(`
-          [b]Nicholas Amadeus[/b]
-
-          [link index.html]Home[/link]  •  [link research.html]Research[/link]  •  [link personal.html]Personal[/link]  •  [link publications.html]Publications[/link]  •  [link contact.html]Contact[/link]
-
-
-          [b]About[/b]
-
-          [link principles.html ]  I am  [/link] an undergraduate student of pure mathematics, statistics, and economics at the University of Michigan.
-
-          My area of study/research is primarily centered on probability theory.
-          In particular, high dimensional probability (and its applications) are my focus.
-          [link https://www.math.uci.edu/~rvershyn/papers/HDP-book/HDP-book.html]Here's my favourite text on the topic by Roman Vershynin[/link].
-          
-          My current area of focus is on optimal transport, and thus my current readings are as follows:
-           - Cédric Villani :  [link https://link.springer.com/book/10.1007/978-3-540-71050-9] Classical Text on OT [/link].
-           - Peyré & Cuturi : [link https://arxiv.org/abs/1803.00567] Applied Treatise. [/link].
-           - Institut Camille Jordan : [link https://math.univ-lyon1.fr/~santambrogio/OTAM-cvgmt.pdf] Another applied version. I cycle between the Peyré and ICJ books [/link].
-           - Kantorovich Institute : [link kantorovich.org ] General resources on OTT [/link].
-           
-          I also create projects pertaining to quantitative finance. 
-          
-          My past projects/work delves more into mathematical physics (specifically Lagrangian mechanics), pure mathematics, and bioinformatics.
-          You can check them [link projects.html]here[/link]. 
-
-
-          [b]Portfolio[/b]
-
-          In Progress.
-
-          Current Projects:
-           - Distributionally Robust Optimization and applied Optimal Transport Theory
-           - Regime detection models
-          Past Projects / Publications:
-           - Risk-Aware Portfolio Construction via Contextual Multi Armed Bandits (quant | bayesian) [python]
-           - Prediction of Bitcoin/USD Order Book Movements SVM and Tree-Based Ensembles (quant | ml) [python]
-           - Rough Isometry of integers (math | group theory / number theory)
-           - Smooth manifolds and Stokes' Theorems (MathDRP | topology)
-           - Noether's Invariance Theorems and Conservation Laws (Physics)
-           - Fractal generators (fractals | python) [python]
-          
-          [b]Experience[/b]
-
-          May - August 2025
-          Student Researcher, University of Michigan Computational Medicine Lab (research)
-          I conducted research at the Rajapakse Lab under the Department of Computational Medicine and Bioinformatics @ UM. I was mentored by Dr. Indika Rajapakse. 
-          Under Dr. Rajapakse's tutelage, we are working on methods in Monge-Kantorovich/Optimal transportation theory applied to cellular reprogramming and advancements in healthcare. 
-          In particular, we studied and proposed tailored implementation plans for  [link https://www.cell.com/cell/fulltext/S0092-8674(19)30039-X] Waddington-Optimal transport [/link]
-
-          June - July 2024
-          Data scientist, Garuda Metalindo, Jakarta, Indonesia (industry)
-          Engineered C++ code and Python scripts to streamline data processing for inventory management of over 2.5 billion products and 50,000 variants annually. 
-          Developed a fraud-detection system on Python using machine learning to detect suspicious inventory shortages, accounting errors, and production measurement errors. 
-          Utilized SQL and relational database knowledge to analyze and develop efficient ways of handling production and financial data.
-
-          September 2023 - Present
-          Michigan Math Laboratory                   
-          Part time staff at the Michigan Mathematics Tutoring and Testing Lab. 
-          Taught students subjects from linear algebra, ordinary differential equations, and vector calculus. 
-          Maintained a secure testing environment for the Michigan Calculus Sequence Bi-semester examinations
-
-          February 2018- March 2018
-          Deloitte Indonesia, Jakarta, Indonesia            
-          Reviewed risk database reports for compliance and fraud prevention in current and past bank clients. 
-          Applied statistical methods to analyze historical client data, identifying patterns of risk exposure across market, credit, and operational domains. 
-          Assisted development of HR risk assessment frameworks aimed at reducing exposure to employee-related liabilities and compensation claims. 
-          
-          [b]Courses[/b]
-          Some relevant courses I've taken over the course of my studies at the University of Michigan
-          Relevant Coursework @ Michigan:
-          ===============
-          Mathematics Coursework:
-          Math 312 - Applied Abstract Algebra
-          Math 316 - Differential Equations 
-          Math 351 - Principles of Real Analysis
-          Math 423 - Mathematical Finance
-          Math 433 - Differential Geometry
-          Math 440 - Lab of Geometry (Research Programme)
-          Math 462 - Mathematical Modelling
-          Math 472 - Numerical Analysis for Finance 
-          Math 507 - Mathematical Methods of Algorithmic Trading*
-          Math 525 - Probability Theory
-          Math 526 - Discrete-State Stochastic Processes
-          Math 547 - Mathematical Methods of Data Analysis
-          Math 551 - Measure Theory*
-          Math 623 - Computational Finance*
-          Math 628 - Machine Learning for Quantitative Finance
-          ===============
-          Statistics Coursework:
-          Datasci 306 - Statistical Computing
-          Stats 413 - Applied Regression Analysis
-          Stats 415 - Statistical Learning and Datamining
-          Stats 426 - Theoretical Statistics
-          Stats 485 - Capstone in Statistical Methods
-          Stats 500 - Regression Analysis
-          Datasci 651 - Topics in Bayesian Analysis (cross-listed: Stats 551)          
-          ===============
-          Economics Coursework:
-          Econ 401 - Intermediate Microeconomic Theory
-          Econ 402 - Intermediate Macroeconomic Theory
-          Econ 409 - Game Theory
-          Econ 452 - Honors Econometrics II
-
-          [b]Myself(?)[/b]
-
-          You can get to know me more holistically through my hobbies and the little activities I enjoy.
-
-          [link URL]Species identification[/link] is a childhood hobby that still holds dear to my heart until today.
-
-          Books speak volumes about an individual (pun intended).
-          Feel free to [link books.html]check out what I love to read[/link].
-
-          Other miscellaneous tidbits of my life are listed on the "Personal" page.
-
-
-          [b]Contact Me[/b]
-
-          [link Namadeus ResumeAlt Research2.pdf]Click here to find my vita, credentials, and contact information[/link].
-
-
-          [i]Last updated - 19/12/2025[/i]
-        `),
-      };
-
-      const state = { chars: [], numRows: 0, numColumns: 0, frame: 0, nextFrameTime: 0 };
-      const VORTI_KEY = "indexVortexPlayed";
-
-      // ------------------------------ Tag-aware text parsing ------------------------------
-      const getCharsFromText = (text) => {
-        const chars = [];
-        const activeTags = [];
-        const cps = [...text];
-        for (let i = 0; i < cps.length; i++) {
-          if (cps[i] === '[' && cps.includes(']', i)) {
-            const j = cps.indexOf(']', i);
-            const tag = cps.slice(i + 1, j).join('');
-            if (tag[0] === '/') {
-              const name = tag.slice(1);
-              const idx = activeTags.findIndex(t => t.name === name);
-              if (idx !== -1) activeTags.splice(idx, 1);
-            } else {
-              const [name, ...args] = tag.split(/\s+/);
-              activeTags.push({ name, args });
-            }
-            i = j;
-            continue;
-          }
-          chars.push({ id: `text-${i}`, char: cps[i], tags: [...activeTags] });
-        }
-        return chars;
-      };
-
-      const wrapText = (chars, width) => {
-        const lines = [];
-        let line = [];
-        for (const ch of chars) {
-          if (ch.char === '\n') { lines.push(line); line = []; continue; }
-          line.push(ch);
-          if (line.length > width) {
-            const cut = line.findLastIndex(c => c.char === ' ');
-            if (cut >= 0) { lines.push(line.slice(0, cut)); line = line.slice(cut + 1); }
-            else { lines.push(line); line = []; }
-          }
-        }
-        if (line.length) lines.push(line);
-        return lines;
-      };
-
-      // ------------------------------ Layout & generation ------------------------------
-      const generateChars = () => {
-        const minRows = Math.floor(window.innerHeight / config.charHeight);
-        let numColumns = Math.floor((window.innerWidth - 1) / config.charWidth);
-        if (numColumns < 25) numColumns = 30;
-
-        let chars = getCharsFromText(config.content);
-
-        const sizeWeight = Math.min(1, Math.max(0, (window.innerWidth - 600) / 1000));
-        const numWrapColumns = Math.ceil(numColumns * (0.6 * sizeWeight + 0.8 * (1 - sizeWeight)));
-
-        const lines = wrapText(chars, numWrapColumns);
-        const numRows = Math.max(minRows, lines.length + 8);
-        const startY = Math.max(5, Math.floor((numRows - lines.length) * 0.4));
-        const startX = Math.floor((numColumns - numWrapColumns) * 0.5);
-
-        chars = [];
-        for (let y = 0; y < lines.length; y++) {
-          for (let x = 0; x < lines[y].length; x++) {
-            const c = lines[y][x];
-            c.weight = random.sampleUniform(0, 1);
-            c.position = { x: random.sampleUniformInt(0, numColumns), y: random.sampleUniformInt(0, numRows) };
-            c.finalPosition = { x: startX + x, y: startY + y };
-            chars.push(c);
-          }
-        }
-
-        chars = chars.filter(c => (c.char !== ' ' && c.char !== '\n') || c.tags.length > 0);
-
-        state.chars = chars;
-        state.numRows = numRows;
-        state.numColumns = numColumns;
-      };
-
-      const settleCharsImmediately = () => {
-        state.chars.forEach(ch => {
-          ch.position = { ...ch.finalPosition };
-        });
-      };
-
-      const createCharElement = ({ position: { x, y }, id, tags, char }) => {
-        const { charWidth, charHeight } = config;
-        const el = document.createElement('a');
-        el.style.position = 'absolute';
-        el.style.top = `${y * charHeight}px`;
-        el.style.left = `${x * charWidth}px`;
-        el.style.minWidth = `${charWidth}px`;
-        el.style.minHeight = `${charHeight}px`;
-        el.textContent = char;
-        el.id = `char-${id}`;
-
-        for (const { name, args } of tags) {
-          if (name === 'link') {
-            el.href = args[0] || '#';
-            if (/^https?:\/\//i.test(args[0])) el.target = '_blank';
-          } else if (name === 'b') {
-            el.style.fontWeight = '700';
-          } else if (name === 'i') {
-            el.style.fontStyle = 'italic';
-          }
-        }
-        return el;
-      };
-
-      const createCornerElement = () => {
-        const { charWidth, charHeight } = config;
-        const { numRows, numColumns } = state;
-        const corner = document.createElement('a');
-        corner.style.position = 'absolute';
-        corner.style.top = `${(numRows - 1) * charHeight}px`;
-        corner.style.left = `${(numColumns - 1) * charWidth}px`;
-        corner.textContent = ' ';
-        return corner;
-      };
-
-      // ------------------------------ Animation ------------------------------
-      const animateGrid = (t) => {
-        if (state.frame >= config.maxFrame) {
-          state.chars.forEach(ch => {
-            ch.position = { ...ch.finalPosition };
-          });
-          state.chars.forEach(updateCharElementPosition);
-          return;
-        }
-
-        if (t > state.nextFrameTime) {
-          evolveChars();
-          state.chars.forEach(updateCharElementPosition);
-          state.nextFrameTime = t + config.intervalMs;
-          state.frame++;
-        }
-        requestAnimationFrame(animateGrid);
-      };
-
-      const evolveChars = () => {
-        const { frame, chars, numRows, numColumns } = state;
-        const { charWidth, charHeight, maxFrame } = config;
-        const t = Math.min(frame / maxFrame, 1);
-        const heightWidthRatio = charHeight / charWidth;
-
-        const positionMap = {};
-        chars.forEach(ch => { positionMap[`${ch.position.y},${ch.position.x}`] = ch; });
-        const frozen = new Set();
-
-        const moveChar = (ch, { x, y }) => {
-          positionMap[`${ch.position.y},${ch.position.x}`] = null;
-          positionMap[`${y},${x}`] = ch;
-          frozen.add(`${y},${x}`);
-          ch.position = { x, y };
-        };
-
-        const sorted = [...chars].sort((a, b) => {
-          const distA = Math.abs(a.finalPosition.y - a.position.y) + Math.abs(a.finalPosition.x - a.position.x);
-          const distB = Math.abs(b.finalPosition.y - b.position.y) + Math.abs(b.finalPosition.x - b.position.x);
-          return (distB - distA) + Math.random() * 6 - 3;
-        });
-
-        for (const ch of sorted) {
-          const { x, y } = ch.position;
-          if (frozen.has(`${y},${x}`)) continue;
-
-          const move = { x: 0, y: 0 };
-
-          // Pull toward final
-          const toFinal = { x: ch.finalPosition.x - x, y: ch.finalPosition.y - y };
-          const dFinal = Math.hypot(toFinal.x, toFinal.y);
-          if (dFinal > 0) {
-            const w = Math.max(0, t - 0.8 + ch.weight);
-            move.x += w * toFinal.x / dFinal;
-            move.y += w * toFinal.y / dFinal;
-          }
-
-          // Clockwise curl around viewport center (strong early, fades out)
-          const centerX = (window.scrollX + window.innerWidth / 2) / charWidth;
-          const centerY = (window.scrollY + window.innerHeight / 2) / charHeight;
-          const toCenter = {
-            x: centerX - x + random.sampleUniform(-0.1, 0.1),
-            y: heightWidthRatio * (centerY - y + random.sampleUniform(-0.1, 0.1)),
-          };
-          const dCenter = Math.hypot(toCenter.x, toCenter.y);
-          if (dCenter > 0) {
-            const w = Math.max(0, 1 - t);
-            move.x += w * toCenter.y / dCenter;
-            move.y += w * -toCenter.x / dCenter;
-          }
-
-          if (Math.hypot(move.x, move.y) < 0.001) { frozen.add(`${y},${x}`); continue; }
-
-          const theta = Math.atan2(move.y, move.x) + random.sampleUniform(-Math.PI/4, Math.PI/4);
-          const step = Math.PI / 4;
-          const dir = Math.round(theta / step) * step;
-
-          const nx = (x + Math.round(Math.cos(dir)) + numColumns) % numColumns;
-          const ny = (y + Math.round(Math.sin(dir)) + numRows) % numRows;
-          const key = `${ny},${nx}`;
-          if (frozen.has(key)) continue;
-
-          const target = positionMap[key];
-          if (target) moveChar(target, ch.position);
-          moveChar(ch, { x: nx, y: ny });
-        }
-      };
-
-      const updateCharElementPosition = ({ position: { x, y }, id }) => {
-        const el = document.getElementById(`char-${id}`);
-        if (!el) return;
-        el.style.top = `${y * config.charHeight}px`;
-        el.style.left = `${x * config.charWidth}px`;
-      };
-
-      // ------------------------------ Boot & Repaint ------------------------------
-      const mountChars = () => {
-        const container = document.getElementById('container');
-        const elements = [...state.chars.map(createCharElement), createCornerElement()];
-        elements.forEach(el => container.appendChild(el));
-      };
-
-      const renderStatic = (themeName) => {
-        if (themeName) {
-          applyTheme(themeName);
-          config.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
-        }
-        const container = document.getElementById('container');
-        container.classList.add('hidden');
-        container.innerHTML = '';
-        generateChars();
-        settleCharsImmediately();
-        mountChars();
-        state.frame = config.maxFrame;
-        state.nextFrameTime = 0;
-        requestAnimationFrame(() => container.classList.remove('hidden'));
-      };
-
-      const vortiFy = () => {
-        const container = document.getElementById('container');
-        container.classList.add('hidden');
-        container.innerHTML = '';
-        generateChars();
-        mountChars();
-        state.frame = 0;
-        state.nextFrameTime = 0;
-        requestAnimationFrame(() => {
-          container.classList.remove('hidden');
-          requestAnimationFrame(animateGrid);
-        });
-      };
-
-      const repaint = (themeName) => {
-        if (themeName) {
-          applyTheme(themeName);
-          config.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
-        }
-        renderStatic();
-      };
-
-      const start = () => {
-        applyTheme(THEME_ORDER[themeIndex]);
-        config.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
-        const alreadyPlayed = localStorage.getItem(VORTI_KEY) === "true";
-        if (alreadyPlayed) {
-          renderStatic();
-        } else {
-          vortiFy();
-          localStorage.setItem(VORTI_KEY, "true");
-        }
-      };
-
-      // Button wiring
-      document.getElementById('repaintBtn').addEventListener('click', () => {
-        themeIndex = (themeIndex + 1) % THEME_ORDER.length;
-        repaint(THEME_ORDER[themeIndex]);
-      });
-
-      document.getElementById('vortifyBtn').addEventListener('click', () => {
-        vortiFy();
-      });
-
-      start();
-      // Optional: repaint on resize for a crisp layout
-      // window.addEventListener('resize', () => repaint(THEME_ORDER[themeIndex]));
+        My current area of focus is on optimal transport, and thus my current readings are as follows:
+         - Cédric Villani :  [link https://link.springer.com/book/10.1007/978-3-540-71050-9] Classical Text on OT [/link].
+         - Peyré & Cuturi : [link https://arxiv.org/abs/1803.00567] Applied Treatise. [/link].
+         - Institut Camille Jordan : [link https://math.univ-lyon1.fr/~santambrogio/OTAM-cvgmt.pdf] Another applied version. I cycle between the Peyré and ICJ books [/link].
+         - Kantorovich Institute : [link kantorovich.org ] General resources on OTT [/link].
+         
+        I also create projects pertaining to quantitative finance. 
+        
+        My past projects/work delves more into mathematical physics (specifically Lagrangian mechanics), pure mathematics, and bioinformatics.
+        You can check them [link projects.html]here[/link]. 
+
+
+        [b]Portfolio[/b]
+
+        In Progress.
+
+        Current Projects:
+         - Distributionally Robust Optimization and applied Optimal Transport Theory
+         - Regime detection models
+        Past Projects / Publications:
+         - Risk-Aware Portfolio Construction via Contextual Multi Armed Bandits (quant | bayesian) [python]
+         - Prediction of Bitcoin/USD Order Book Movements SVM and Tree-Based Ensembles (quant | ml) [python]
+         - Rough Isometry of integers (math | group theory / number theory)
+         - Smooth manifolds and Stokes' Theorems (MathDRP | topology)
+         - Noether's Invariance Theorems and Conservation Laws (Physics)
+         - Fractal generators (fractals | python) [python]
+        
+        [b]Experience[/b]
+
+        May - August 2025
+        Student Researcher, University of Michigan Computational Medicine Lab (research)
+        I conducted research at the Rajapakse Lab under the Department of Computational Medicine and Bioinformatics @ UM. I was mentored by Dr. Indika Rajapakse. 
+        Under Dr. Rajapakse's tutelage, we are working on methods in Monge-Kantorovich/Optimal transportation theory applied to cellular reprogramming and advancements in healthcare. 
+        In particular, we studied and proposed tailored implementation plans for  [link https://www.cell.com/cell/fulltext/S0092-8674(19)30039-X] Waddington-Optimal transport [/link]
+
+        June - July 2024
+        Data scientist, Garuda Metalindo, Jakarta, Indonesia (industry)
+        Engineered C++ code and Python scripts to streamline data processing for inventory management of over 2.5 billion products and 50,000 variants annually. 
+        Developed a fraud-detection system on Python using machine learning to detect suspicious inventory shortages, accounting errors, and production measurement errors. 
+        Utilized SQL and relational database knowledge to analyze and develop efficient ways of handling production and financial data.
+
+        September 2023 - Present
+        Michigan Math Laboratory                   
+        Part time staff at the Michigan Mathematics Tutoring and Testing Lab. 
+        Taught students subjects from linear algebra, ordinary differential equations, and vector calculus. 
+        Maintained a secure testing environment for the Michigan Calculus Sequence Bi-semester examinations
+
+        February 2018- March 2018
+        Deloitte Indonesia, Jakarta, Indonesia            
+        Reviewed risk database reports for compliance and fraud prevention in current and past bank clients. 
+        Applied statistical methods to analyze historical client data, identifying patterns of risk exposure across market, credit, and operational domains. 
+        Assisted development of HR risk assessment frameworks aimed at reducing exposure to employee-related liabilities and compensation claims. 
+        
+        [b]Courses[/b]
+        Some relevant courses I've taken over the course of my studies at the University of Michigan
+        Relevant Coursework @ Michigan:
+        ===============
+        Mathematics Coursework:
+        Math 312 - Applied Abstract Algebra
+        Math 316 - Differential Equations 
+        Math 351 - Principles of Real Analysis
+        Math 423 - Mathematical Finance
+        Math 433 - Differential Geometry
+        Math 440 - Lab of Geometry (Research Programme)
+        Math 462 - Mathematical Modelling
+        Math 472 - Numerical Analysis for Finance 
+        Math 507 - Mathematical Methods of Algorithmic Trading*
+        Math 525 - Probability Theory
+        Math 526 - Discrete-State Stochastic Processes
+        Math 547 - Mathematical Methods of Data Analysis
+        Math 551 - Measure Theory*
+        Math 623 - Computational Finance*
+        Math 628 - Machine Learning for Quantitative Finance
+        ===============
+        Statistics Coursework:
+        Datasci 306 - Statistical Computing
+        Stats 413 - Applied Regression Analysis
+        Stats 415 - Statistical Learning and Datamining
+        Stats 426 - Theoretical Statistics
+        Stats 485 - Capstone in Statistical Methods
+        Stats 500 - Regression Analysis
+        Datasci 651 - Topics in Bayesian Analysis (cross-listed: Stats 551)          
+        ===============
+        Economics Coursework:
+        Econ 401 - Intermediate Microeconomic Theory
+        Econ 402 - Intermediate Macroeconomic Theory
+        Econ 409 - Game Theory
+        Econ 452 - Honors Econometrics II
+
+        [b]Myself(?)[/b]
+
+        You can get to know me more holistically through my hobbies and the little activities I enjoy.
+
+        [link URL]Species identification[/link] is a childhood hobby that still holds dear to my heart until today.
+
+        Books speak volumes about an individual (pun intended).
+        Feel free to [link books.html]check out what I love to read[/link].
+
+        Other miscellaneous tidbits of my life are listed on the "Personal" page.
+
+
+        [b]Contact Me[/b]
+
+        [link Namadeus ResumeAlt Research2.pdf]Click here to find my vita, credentials, and contact information[/link].
+
+
+        [i]Last updated - 19/12/2025[/i]
+      `
     });
-  </script>
-</body>
-</html>
+
+    document.getElementById("repaintBtn").addEventListener("click", () => {
+      SiteTheme.repaint();
+      app.renderStatic();
+    });
+
+    document.getElementById("vortifyBtn").addEventListener("click", () => {
+      app.vortiFy();
+    });
+
+    app.firstLoadBehavior();
+  });
+</script>
