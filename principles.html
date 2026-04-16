@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Principles | Nicholas Amadeus</title>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap">
+
+  <style>
+    :root {
+      --bg: #fffbef;
+      --fg: #222222;
+      --border: #222222;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Source Code Pro', monospace;
+      font-size: 15px;
+    }
+
+    #repaintBtn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      border: 1px solid currentColor;
+      background: transparent;
+      color: var(--fg);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      backdrop-filter: blur(2px);
+    }
+
+    #repaintBtn:hover {
+      opacity: 0.8;
+    }
+
+    .page {
+      min-height: 100vh;
+      box-sizing: border-box;
+      padding: 72px 24px 40px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .topnav {
+      width: min(820px, 100%);
+      margin-bottom: 28px;
+      text-align: left;
+      line-height: 1.5;
+    }
+
+    .topnav a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .topnav a:hover {
+      text-decoration: underline;
+    }
+
+    .title {
+      width: min(820px, 100%);
+      margin-bottom: 18px;
+      font-weight: 700;
+      font-size: 24px;
+    }
+
+    .subtitle {
+      width: min(820px, 100%);
+      margin-bottom: 18px;
+      line-height: 1.6;
+    }
+
+    .principles-box {
+      width: min(820px, 100%);
+      border: 1px solid var(--border);
+      padding: 28px 28px 20px 28px;
+      box-sizing: border-box;
+      background: transparent;
+    }
+
+    .section-label {
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    .principle {
+      line-height: 1.9;
+      margin-bottom: 10px;
+      white-space: normal;
+    }
+
+    .lead {
+      display: inline-block;
+      min-width: 5ch;
+    }
+
+    .slot {
+      display: inline-block;
+      min-width: 16ch;
+      padding: 0 2px;
+      border-bottom: 1px solid currentColor;
+      font-weight: 700;
+      vertical-align: baseline;
+    }
+
+    .slot.right {
+      min-width: 18ch;
+    }
+
+    .footnote {
+      width: min(820px, 100%);
+      margin-top: 16px;
+      line-height: 1.6;
+      opacity: 0.9;
+    }
+
+    @media (max-width: 640px) {
+      .principles-box {
+        padding: 20px 16px 14px 16px;
+      }
+
+      .principle {
+        line-height: 2.1;
+      }
+
+      .slot,
+      .slot.right {
+        min-width: 12ch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button id="repaintBtn" title="Cycle theme">Repaint</button>
+
+  <div class="page">
+    <div class="topnav">
+      <a href="index.html">Home</a>  •
+      <a href="research.html">Research</a>  •
+      <a href="personal.html">Personal</a>  •
+      <a href="publications.html">Publications</a>  •
+      <a href="contact.html">Contact</a>
+    </div>
+
+    <div class="title">Principles</div>
+
+    <div class="subtitle">
+      A rotating list of pairings. The page itself stays still. Only the commitments move.
+    </div>
+
+    <div class="principles-box">
+      <div class="section-label">I am...</div>
+
+      <div class="principle">
+        <span class="lead">I am</span>
+        <span class="slot left" data-side="left"></span>
+        <span>for</span>
+        <span class="slot right" data-side="right"></span>.
+      </div>
+
+      <div class="principle">
+        <span class="lead">I am</span>
+        <span class="slot left" data-side="left"></span>
+        <span>for</span>
+        <span class="slot right" data-side="right"></span>.
+      </div>
+
+      <div class="principle">
+        <span class="lead">I am</span>
+        <span class="slot left" data-side="left"></span>
+        <span>for</span>
+        <span class="slot right" data-side="right"></span>.
+      </div>
+
+      <div class="principle">
+        <span class="lead">I am</span>
+        <span class="slot left" data-side="left"></span>
+        <span>for</span>
+        <span class="slot right" data-side="right"></span>.
+      </div>
+
+      <div class="principle">
+        <span class="lead">I am</span>
+        <span class="slot left" data-side="left"></span>
+        <span>for</span>
+        <span class="slot right" data-side="right"></span>.
+      </div>
+
+      <div class="principle">
+        <span class="lead">I am</span>
+        <span class="slot left" data-side="left"></span>
+        <span>for</span>
+        <span class="slot right" data-side="right"></span>.
+      </div>
+    </div>
+
+    <div class="footnote">
+      Repaint cycles the palette. The pairings recombine on their own.
+    </div>
+  </div>
+
+  <script>
+    const THEMES = {
+      "Default":       { bg: "#fffbef", fg: "#222222" },
+      "Castle":        { bg: "#171628", fg: "#ffffff" },
+      "ProveIt":       { bg: "#223c5f", fg: "#ff3300" },
+      "HakunaMatata":  { bg: "#0c2c73", fg: "#ffffff" },
+      "Drawer":        { bg: "#1d2643", fg: "#02d3be" },
+      "tooSigma":      { bg: "#00a5bd", fg: "#edf9fa" },
+      "PokerRiver":    { bg: "#0e4888", fg: "#e7f2f8" },
+      "PlainJane":     { bg: "#ffffff", fg: "#000000" },
+      "insiderTrader27": { bg: "#000000", fg: "#00aeef" },
+      "HormoneReplacementTherapy": { bg: "#fc8404", fg: "#ffffff" },
+      "Musashi":       { bg: "#405270", fg: "#ffffff" },
+      "Root":          { bg: "#000000", fg: "#66b361" }
+    };
+
+    const THEME_ORDER = [
+      "Default", "Castle", "ProveIt", "HakunaMatata", "Drawer",
+      "tooSigma", "PokerRiver", "PlainJane", "insiderTrader27",
+      "HormoneReplacementTherapy", "Musashi", "Root"
+    ];
+
+    let themeIndex = 0;
+
+    function applyTheme(name) {
+      const t = THEMES[name] || THEMES["Default"];
+      document.documentElement.style.setProperty("--bg", t.bg);
+      document.documentElement.style.setProperty("--fg", t.fg);
+      document.documentElement.style.setProperty("--border", t.fg);
+      document.body.style.background = t.bg;
+      document.body.style.color = t.fg;
+    }
+
+    document.getElementById("repaintBtn").addEventListener("click", () => {
+      themeIndex = (themeIndex + 1) % THEME_ORDER.length;
+      applyTheme(THEME_ORDER[themeIndex]);
+    });
+
+    applyTheme(THEME_ORDER[themeIndex]);
+
+    const PAIRS = [
+      { left: "against complacency", right: "clarity" },
+      { left: "against vagueness", right: "precision" },
+      { left: "against empty fluency", right: "substance" },
+      { left: "against drift", right: "direction" },
+      { left: "against intellectual laziness", right: "rigor" },
+      { left: "against ornament", right: "structure" },
+      { left: "against noise", right: "signal" },
+      { left: "against inertia", right: "deliberate action" },
+      { left: "against shallow novelty", right: "lasting ideas" },
+      { left: "against borrowed certainty", right: "earned conviction" },
+      { left: "against sterile abstraction", right: "living theory" },
+      { left: "against passivity", right: "construction" },
+      { left: "against pretense", right: "honesty" },
+      { left: "against rote memory", right: "understanding" },
+      { left: "against fragmentation", right: "synthesis" },
+      { left: "against intellectual cowardice", right: "direct thought" },
+      { left: "against dullness", right: "wonder" },
+      { left: "against overfitting", right: "robustness" },
+      { left: "against confusion", right: "clean form" },
+      { left: "against aimless accumulation", right: "taste" }
+    ];
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789<>/=+*#%&?";
+
+    function scrambleToText(el, target, duration = 900) {
+      const start = performance.now();
+      const maxLen = Math.max(target.length, el.textContent.length);
+
+      function frame(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const reveal = Math.floor(progress * target.length);
+
+        let out = "";
+        for (let i = 0; i < maxLen; i++) {
+          if (i < reveal && i < target.length) {
+            out += target[i];
+          } else if (i < target.length) {
+            out += GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+          }
+        }
+
+        el.textContent = out;
+
+        if (progress < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          el.textContent = target;
+        }
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    const rows = [...document.querySelectorAll(".principle")].map(row => ({
+      left: row.querySelector(".slot.left"),
+      right: row.querySelector(".slot.right")
+    }));
+
+    function fillRows(initial = false) {
+      const selected = shuffle(PAIRS).slice(0, rows.length);
+
+      rows.forEach((row, i) => {
+        const pair = selected[i];
+        if (initial) {
+          row.left.textContent = pair.left;
+          row.right.textContent = pair.right;
+        } else {
+          scrambleToText(row.left, pair.left, 700 + Math.random() * 500);
+          setTimeout(() => {
+            scrambleToText(row.right, pair.right, 700 + Math.random() * 500);
+          }, 120 + Math.random() * 250);
+        }
+      });
+    }
+
+    fillRows(true);
+    setInterval(() => fillRows(false), 3600);
+  </script>
+</body>
+</html>
